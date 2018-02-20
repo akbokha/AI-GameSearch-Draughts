@@ -116,20 +116,10 @@ public class IntelligentAlphaBetaPlayer extends DraughtsPlayer{
         if (stopped) { stopped = false; throw new AIStoppedException(); }
         DraughtsState state = node.getState();
         // ToDo: write an alphabeta search to compute bestMove and value
-        List<Move> moves = state.getMoves();
-        node.setBestMove(moves.get(0));
-        if (depth > maxSearchDepth) {
-            return evaluate(state);
-        }
-        for (Move move : moves) {
-            state.doMove(move);
-            beta = Math.min(beta, alphaBetaMax(node, alpha, beta, (depth - 1)));
-            if (beta <= alpha) {
-                node.setBestMove(move);
-            }
-            state.undoMove(move);
-        }
-        return beta;
+        Move bestMove = state.getMoves().get(0);
+        int value = 0;
+        node.setBestMove(bestMove);
+        return value;
      }
     
     int alphaBetaMax(DraughtsNode node, int alpha, int beta, int depth)
@@ -137,44 +127,13 @@ public class IntelligentAlphaBetaPlayer extends DraughtsPlayer{
         if (stopped) { stopped = false; throw new AIStoppedException(); }
         DraughtsState state = node.getState();
         // ToDo: write an alphabeta search to compute bestMove and value
-        List<Move> moves = state.getMoves();
-        node.setBestMove(moves.get(0));
-        if (depth > maxSearchDepth) {
-            return evaluate(state);
-        }
-        for (Move move : moves) {
-            state.doMove(move);
-            alpha = Math.max(alpha, alphaBetaMin(node, alpha, beta, (depth - 1)));
-            if (alpha >= beta) {
-                node.setBestMove(move);
-            }
-            state.undoMove(move);
-        }
-        return alpha;
+        Move bestMove = state.getMoves().get(0);
+        int value = 0;
+        node.setBestMove(bestMove);
+        return value;
     }
 
     /** A method that evaluates the given state. */
     // ToDo: write an appropriate evaluation function
-    int evaluate(DraughtsState state) {
-        int [] pieces  = state.getPieces();
-        int rating = 0;
-        if (state.isWhiteToMove()) {
-            for (int i = 1; i < pieces.length; i++) {
-                if (pieces[i] == DraughtsState.WHITEPIECE) {
-                    rating ++;
-                } else if (pieces[i] == DraughtsState.WHITEKING){
-                    rating += 2;
-                }
-            }
-        } else { // black move
-            for (int i = 1; i < pieces.length; i++) {
-                if (pieces[i] == DraughtsState.BLACKPIECE) {
-                    rating ++;
-                } else if (pieces[i] == DraughtsState.BLACKKING){
-                    rating += 2;
-                }
-            }
-        }
-        return rating;
-    }
+    int evaluate(DraughtsState state) { return 0; }
 }
