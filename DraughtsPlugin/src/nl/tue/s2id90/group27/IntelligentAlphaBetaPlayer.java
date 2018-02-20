@@ -115,22 +115,20 @@ public class IntelligentAlphaBetaPlayer extends DraughtsPlayer{
             throws AIStoppedException {
         if (stopped) { stopped = false; throw new AIStoppedException(); }
         DraughtsState state = node.getState();
-        // ToDo: write an alphabeta search to compute bestMove and value
+        if (depth == 0) {
+            return evaluate(state);
+        }
         List<Move> moves = state.getMoves();
         if (moves.isEmpty()) {
             return MAX_VALUE;
         }
         node.setBestMove(moves.get(0));
-        if (depth == 0) {
-            return evaluate(state);
-        }
         for (Move move : moves) {
             state.doMove(move);
             beta = Math.min(beta, alphaBetaMax(node, alpha, beta, depth - 1));
             state.undoMove(move);
             if (beta <= alpha) {
-                if (depth == maxSearchDepth)
-                    node.setBestMove(move);
+                node.setBestMove(move);
                 return alpha;
             }
         }
@@ -141,22 +139,20 @@ public class IntelligentAlphaBetaPlayer extends DraughtsPlayer{
             throws AIStoppedException {
         if (stopped) { stopped = false; throw new AIStoppedException(); }
         DraughtsState state = node.getState();
-        // ToDo: write an alphabeta search to compute bestMove and value
+        if (depth == 0) {
+            return evaluate(state);
+        }
         List<Move> moves = state.getMoves();
         if (moves.isEmpty()) {
             return MIN_VALUE;
         }
         node.setBestMove(moves.get(0));
-        if (depth == 0) {
-            return evaluate(state);
-        }
         for (Move move : moves) {
             state.doMove(move);
             alpha = Math.max(alpha, alphaBetaMin(node, alpha, beta, depth - 1));
             state.undoMove(move);
             if (alpha >= beta) {
-                if (depth == maxSearchDepth)
-                    node.setBestMove(move);
+                node.setBestMove(move);
                 return beta;
             }
         }
