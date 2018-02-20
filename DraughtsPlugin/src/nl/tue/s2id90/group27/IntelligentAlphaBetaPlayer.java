@@ -117,17 +117,22 @@ public class IntelligentAlphaBetaPlayer extends DraughtsPlayer{
         DraughtsState state = node.getState();
         // ToDo: write an alphabeta search to compute bestMove and value
         List<Move> moves = state.getMoves();
+        if (moves.isEmpty()) {
+            return MAX_VALUE;
+        }
         node.setBestMove(moves.get(0));
-        if (depth > maxSearchDepth) {
+        if (depth == 0) {
             return evaluate(state);
         }
         for (Move move : moves) {
             state.doMove(move);
-            beta = Math.min(beta, alphaBetaMax(node, alpha, beta, (depth - 1)));
-            if (beta <= alpha) {
-                node.setBestMove(move);
-            }
+            beta = Math.min(beta, alphaBetaMax(node, alpha, beta, depth - 1));
             state.undoMove(move);
+            if (beta <= alpha) {
+                if (depth == maxSearchDepth)
+                    node.setBestMove(move);
+                return alpha;
+            }
         }
         return beta;
      }
@@ -138,17 +143,22 @@ public class IntelligentAlphaBetaPlayer extends DraughtsPlayer{
         DraughtsState state = node.getState();
         // ToDo: write an alphabeta search to compute bestMove and value
         List<Move> moves = state.getMoves();
+        if (moves.isEmpty()) {
+            return MIN_VALUE;
+        }
         node.setBestMove(moves.get(0));
-        if (depth > maxSearchDepth) {
+        if (depth == 0) {
             return evaluate(state);
         }
         for (Move move : moves) {
             state.doMove(move);
-            alpha = Math.max(alpha, alphaBetaMin(node, alpha, beta, (depth - 1)));
-            if (alpha >= beta) {
-                node.setBestMove(move);
-            }
+            alpha = Math.max(alpha, alphaBetaMin(node, alpha, beta, depth - 1));
             state.undoMove(move);
+            if (alpha >= beta) {
+                if (depth == maxSearchDepth)
+                    node.setBestMove(move);
+                return beta;
+            }
         }
         return alpha;
     }
@@ -175,6 +185,6 @@ public class IntelligentAlphaBetaPlayer extends DraughtsPlayer{
                 }
             }
         }
-        return rating;
+        return rating;        
     }
 }
