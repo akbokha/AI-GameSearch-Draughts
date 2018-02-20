@@ -1,4 +1,4 @@
-package nl.tue.s2id90.groupNN.samples;
+package nl.tue.s2id90.group27.samples;
 
 
 import java.util.List;

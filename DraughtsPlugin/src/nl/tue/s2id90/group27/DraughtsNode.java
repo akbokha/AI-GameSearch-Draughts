@@ -1,4 +1,4 @@
-package nl.tue.s2id90.groupNN;
+package nl.tue.s2id90.group27;
 
 import nl.tue.s2id90.draughts.DraughtsState;
 import org10x10.dam.game.Move;
