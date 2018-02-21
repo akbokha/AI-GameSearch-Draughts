@@ -115,7 +115,7 @@ public class IntelligentAlphaBetaPlayer extends DraughtsPlayer{
             throws AIStoppedException {
         if (stopped) { stopped = false; throw new AIStoppedException(); }
         DraughtsState state = node.getState();
-        if (depth == 0) {
+        if (depth == 0 || state.isEndState()) {
             return evaluate(state);
         }
         List<Move> moves = state.getMoves();
@@ -125,8 +125,9 @@ public class IntelligentAlphaBetaPlayer extends DraughtsPlayer{
         node.setBestMove(moves.get(0));
         for (Move move : moves) {
             state.doMove(move);
-            beta = Math.min(beta, alphaBetaMax(node, alpha, beta, depth - 1));
+            DraughtsNode nextState = new DraughtsNode(state);
             state.undoMove(move);
+            beta = Math.min(beta, alphaBetaMax(nextState, alpha, beta, depth - 1));
             if (beta <= alpha) {
                 node.setBestMove(move);
                 return alpha;
@@ -139,7 +140,7 @@ public class IntelligentAlphaBetaPlayer extends DraughtsPlayer{
             throws AIStoppedException {
         if (stopped) { stopped = false; throw new AIStoppedException(); }
         DraughtsState state = node.getState();
-        if (depth == 0) {
+        if (depth == 0 || state.isEndState()) {
             return evaluate(state);
         }
         List<Move> moves = state.getMoves();
@@ -149,7 +150,8 @@ public class IntelligentAlphaBetaPlayer extends DraughtsPlayer{
         node.setBestMove(moves.get(0));
         for (Move move : moves) {
             state.doMove(move);
-            alpha = Math.max(alpha, alphaBetaMin(node, alpha, beta, depth - 1));
+            DraughtsNode nextState = new DraughtsNode(state);
+            alpha = Math.max(alpha, alphaBetaMin(nextState, alpha, beta, depth - 1));
             state.undoMove(move);
             if (alpha >= beta) {
                 node.setBestMove(move);
