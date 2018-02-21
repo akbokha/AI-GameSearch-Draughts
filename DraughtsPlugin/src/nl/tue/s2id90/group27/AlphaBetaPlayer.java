@@ -14,14 +14,14 @@ import org10x10.dam.game.Move;
  */
 // ToDo: rename this class (and hence this file) to have a distinct name
 //       for your player during the tournament
-public class IntelligentAlphaBetaPlayer extends DraughtsPlayer{
+public class AlphaBetaPlayer extends DraughtsPlayer{
     private int bestValue=0;
     int maxSearchDepth;
     
     /** boolean that indicates that the GUI asked the player to stop thinking. */
     private boolean stopped;
 
-    public IntelligentAlphaBetaPlayer(int maxSearchDepth) {
+    public AlphaBetaPlayer(int maxSearchDepth) {
         super("best.png"); // ToDo: replace with your own icon
         this.maxSearchDepth = maxSearchDepth;
     }
@@ -115,7 +115,7 @@ public class IntelligentAlphaBetaPlayer extends DraughtsPlayer{
             throws AIStoppedException {
         if (stopped) { stopped = false; throw new AIStoppedException(); }
         DraughtsState state = node.getState();
-        if (depth == 0 || state.isEndState()) {
+        if (depth == 0) {
             return evaluate(state);
         }
         List<Move> moves = state.getMoves();
@@ -140,7 +140,7 @@ public class IntelligentAlphaBetaPlayer extends DraughtsPlayer{
             throws AIStoppedException {
         if (stopped) { stopped = false; throw new AIStoppedException(); }
         DraughtsState state = node.getState();
-        if (depth == 0 || state.isEndState()) {
+        if (depth == 0) {
             return evaluate(state);
         }
         List<Move> moves = state.getMoves();
@@ -161,28 +161,32 @@ public class IntelligentAlphaBetaPlayer extends DraughtsPlayer{
         return alpha;
     }
 
-    /** A method that evaluates the given state. */
+    /**
+     * A method that evaluates the given state.
+     * Note: White wants to maximize this function, black to minimize.
+     */
     // ToDo: write an appropriate evaluation function
     int evaluate(DraughtsState state) {
         int [] pieces  = state.getPieces();
-        int rating = 0;
-        if (state.isWhiteToMove()) {
-            for (int i = 1; i < pieces.length; i++) {
-                if (pieces[i] == DraughtsState.WHITEPIECE) {
-                    rating ++;
-                } else if (pieces[i] == DraughtsState.WHITEKING){
-                    rating += 2;
-                }
-            }
-        } else { // black move
-            for (int i = 1; i < pieces.length; i++) {
-                if (pieces[i] == DraughtsState.BLACKPIECE) {
-                    rating ++;
-                } else if (pieces[i] == DraughtsState.BLACKKING){
-                    rating += 2;
-                }
+        int whiteValue = 0;
+        int blackValue = 0;
+        
+        for (int i = 1; i < pieces.length; i++) {
+            if (pieces[i] == DraughtsState.WHITEPIECE) {
+                whiteValue ++;
+            } else if (pieces[i] == DraughtsState.WHITEKING){
+                whiteValue += 3;
             }
         }
-        return rating;        
+
+        for (int i = 1; i < pieces.length; i++) {
+            if (pieces[i] == DraughtsState.BLACKPIECE) {
+                blackValue ++;
+            } else if (pieces[i] == DraughtsState.BLACKKING){
+                blackValue += 3;
+            }
+        }
+        
+        return whiteValue - blackValue;
     }
 }
