@@ -14,14 +14,14 @@ import org10x10.dam.game.Move;
  */
 // ToDo: rename this class (and hence this file) to have a distinct name
 //       for your player during the tournament
-public class AlphaBetaPlayer extends DraughtsPlayer{
+public class AlphaBetaGroup27 extends DraughtsPlayer{
     private int bestValue=0;
     int maxSearchDepth;
     
     /** boolean that indicates that the GUI asked the player to stop thinking. */
     private boolean stopped;
 
-    public AlphaBetaPlayer(int maxSearchDepth) {
+    public AlphaBetaGroup27(int maxSearchDepth) {
         super("best.png"); // ToDo: replace with your own icon
         this.maxSearchDepth = maxSearchDepth;
     }
