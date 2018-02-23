@@ -88,9 +88,9 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             throws AIStoppedException
     {
         if (node.getState().isWhiteToMove()) {
-            return alphaBetaMax(node, alpha, beta, depth);
+            return alphaBetaMax(node, alpha, beta, depth, true);
         } else  {
-            return alphaBetaMin(node, alpha, beta, depth);
+            return alphaBetaMin(node, alpha, beta, depth, true);
         }
     }
     
@@ -111,7 +111,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
      * @return the compute value of this node
      * @throws AIStoppedException thrown whenever the boolean stopped has been set to true.
      */
-     int alphaBetaMin(DraughtsNode node, int alpha, int beta, int depth)
+     int alphaBetaMin(DraughtsNode node, int alpha, int beta, int depth, boolean isRoot)
             throws AIStoppedException {
         if (stopped) { stopped = false; throw new AIStoppedException(); }
         DraughtsState state = node.getState();
@@ -122,21 +122,26 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         if (moves.isEmpty()) {
             return MAX_VALUE;
         }
-        node.setBestMove(moves.get(0));
         for (Move move : moves) {
             state.doMove(move);
-            DraughtsNode nextState = new DraughtsNode(state);
+            try {
+                beta = Math.min(beta, alphaBetaMax(node, alpha, beta, depth - 1, false));
+            } catch (AIStoppedException e) {
+                state.undoMove(move);
+                throw e;
+            }
             state.undoMove(move);
-            beta = Math.min(beta, alphaBetaMax(nextState, alpha, beta, depth - 1));
             if (beta <= alpha) {
-                node.setBestMove(move);
+                if (isRoot) {
+                    node.setBestMove(move);
+                }
                 return alpha;
             }
         }
         return beta;
      }
     
-    int alphaBetaMax(DraughtsNode node, int alpha, int beta, int depth)
+    int alphaBetaMax(DraughtsNode node, int alpha, int beta, int depth, boolean isRoot)
             throws AIStoppedException {
         if (stopped) { stopped = false; throw new AIStoppedException(); }
         DraughtsState state = node.getState();
@@ -147,14 +152,19 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         if (moves.isEmpty()) {
             return MIN_VALUE;
         }
-        node.setBestMove(moves.get(0));
         for (Move move : moves) {
             state.doMove(move);
-            DraughtsNode nextState = new DraughtsNode(state);
-            alpha = Math.max(alpha, alphaBetaMin(nextState, alpha, beta, depth - 1));
+            try {
+                alpha = Math.max(alpha, alphaBetaMin(node, alpha, beta, depth - 1, false));
+            } catch (AIStoppedException e) {
+                state.undoMove(move);
+                throw e;
+            }
             state.undoMove(move);
             if (alpha >= beta) {
-                node.setBestMove(move);
+                if (isRoot) {
+                   node.setBestMove(move);
+                }
                 return beta;
             }
         }
