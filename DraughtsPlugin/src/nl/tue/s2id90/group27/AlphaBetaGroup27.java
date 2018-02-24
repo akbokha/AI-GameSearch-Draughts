@@ -17,7 +17,7 @@ import org10x10.dam.game.Move;
 public class AlphaBetaGroup27 extends DraughtsPlayer{
     private int bestValue=0;
     int maxSearchDepth;
-    
+
     /** boolean that indicates that the GUI asked the player to stop thinking. */
     private boolean stopped;
 
@@ -25,7 +25,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         super("best.png"); // ToDo: replace with your own icon
         this.maxSearchDepth = maxSearchDepth;
     }
-    
+
     @Override public Move getMove(DraughtsState s) {
         Move bestMove = null;
         bestValue = 0;
@@ -33,31 +33,31 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         try {
             // compute bestMove and bestValue in a call to alphabeta
             bestValue = alphaBeta(node, MIN_VALUE, MAX_VALUE, maxSearchDepth);
-            
+
             // store the bestMove found uptill now
             // NB this is not done in case of an AIStoppedException in alphaBeat()
             bestMove  = node.getBestMove();
-            
+
             // print the results for debugging reasons
             System.err.format(
-                "%s: depth= %2d, best move = %5s, value=%d\n", 
+                "%s: depth= %2d, best move = %5s, value=%d\n",
                 this.getClass().getSimpleName(),maxSearchDepth, bestMove, bestValue
             );
         } catch (AIStoppedException ex) {  /* nothing to do */  }
-        
+
         if (bestMove==null) {
             System.err.println("no valid move found!");
             return getRandomValidMove(s);
         } else {
             return bestMove;
         }
-    } 
+    }
 
     /** This method's return value is displayed in the AICompetition GUI.
-     * 
-     * @return the value for the draughts state s as it is computed in a call to getMove(s). 
+     *
+     * @return the value for the draughts state s as it is computed in a call to getMove(s).
      */
-    @Override public Integer getValue() { 
+    @Override public Integer getValue() {
        return bestValue;
     }
 
@@ -65,16 +65,16 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
      * throws an AIStoppedException when boolean stopped is set to true;
     **/
     @Override public void stop() {
-       stopped = true; 
+       stopped = true;
     }
-    
+
     /** returns random valid move in state s, or null if no moves exist. */
     Move getRandomValidMove(DraughtsState s) {
         List<Move> moves = s.getMoves();
         Collections.shuffle(moves);
         return moves.isEmpty()? null : moves.get(0);
     }
-    
+
     /** Implementation of alphabeta that automatically chooses the white player
      *  as maximizing player and the black player as minimizing player.
      * @param node contains DraughtsState and has field to which the best move can be assigned.
@@ -93,10 +93,10 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             return alphaBetaMin(node, alpha, beta, depth, true);
         }
     }
-    
+
     /** Does an alphabeta computation with the given alpha and beta
      * where the player that is to move in node is the minimizing player.
-     * 
+     *
      * <p>Typical pieces of code used in this method are:
      *     <ul> <li><code>DraughtsState state = node.getState()</code>.</li>
      *          <li><code> state.doMove(move); .... ; state.undoMove(move);</code></li>
@@ -113,62 +113,68 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
      */
      int alphaBetaMin(DraughtsNode node, int alpha, int beta, int depth, boolean isRoot)
             throws AIStoppedException {
-        if (stopped) { stopped = false; throw new AIStoppedException(); }
+        if (stopped) { stopped = false; System.err.println("stop"); throw new AIStoppedException(); }
         DraughtsState state = node.getState();
         if (depth == 0) {
             return evaluate(state);
         }
         List<Move> moves = state.getMoves();
-        if (moves.isEmpty()) {
-            return MAX_VALUE;
-        }
+        int newBetaVal = beta; // return value if moves.isEmpty() (MAX_VAL)
+        Move bestMove = null; // check err to see if it remains null 
+
         for (Move move : moves) {
             state.doMove(move);
             try {
-                beta = Math.min(beta, alphaBetaMax(node, alpha, beta, depth - 1, false));
+                int subTreeVal = alphaBetaMax(node, alpha, newBetaVal, depth - 1, false);
+                if (subTreeVal < newBetaVal) {
+                    newBetaVal = subTreeVal;
+                    bestMove = move;
+                }
             } catch (AIStoppedException e) {
+                System.err.println("stop");
                 state.undoMove(move);
                 throw e;
             }
             state.undoMove(move);
-            if (beta <= alpha) {
-                if (isRoot) {
-                    node.setBestMove(move);
-                }
-                return alpha;
+            if (newBetaVal <= alpha) {
+                break;
             }
         }
-        return beta;
+        node.setBestMove(bestMove);
+        return newBetaVal;
      }
-    
+
     int alphaBetaMax(DraughtsNode node, int alpha, int beta, int depth, boolean isRoot)
             throws AIStoppedException {
-        if (stopped) { stopped = false; throw new AIStoppedException(); }
+        if (stopped) { stopped = false; System.err.println("stop"); throw new AIStoppedException(); }
         DraughtsState state = node.getState();
         if (depth == 0) {
             return evaluate(state);
         }
         List<Move> moves = state.getMoves();
-        if (moves.isEmpty()) {
-            return MIN_VALUE;
-        }
+        int newAlphaVal = alpha; // return value if moves.isEmpty() (MIN_VAL)
+        Move bestMove = null; // check err to see if it remains null 
+
         for (Move move : moves) {
             state.doMove(move);
             try {
-                alpha = Math.max(alpha, alphaBetaMin(node, alpha, beta, depth - 1, false));
+                int subTreeVal = alphaBetaMin(node, alpha, beta, depth - 1, false);
+                    if (subTreeVal > newAlphaVal) {
+                        newAlphaVal = subTreeVal;
+                        bestMove = move;
+                }
             } catch (AIStoppedException e) {
                 state.undoMove(move);
+                System.err.println("stop");
                 throw e;
             }
             state.undoMove(move);
-            if (alpha >= beta) {
-                if (isRoot) {
-                   node.setBestMove(move);
-                }
-                return beta;
+            if (beta <= newAlphaVal) {
+                break;
             }
         }
-        return alpha;
+        node.setBestMove(bestMove);
+        return newAlphaVal;
     }
 
     /**
@@ -180,7 +186,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         int [] pieces  = state.getPieces();
         int whiteValue = 0;
         int blackValue = 0;
-        
+
         for (int i = 1; i < pieces.length; i++) {
             if (pieces[i] == DraughtsState.WHITEPIECE) {
                 whiteValue ++;
@@ -196,7 +202,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
                 blackValue += 3;
             }
         }
-        
+
         return whiteValue - blackValue;
     }
 }
