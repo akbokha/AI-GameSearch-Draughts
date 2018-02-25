@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import nl.tue.s2id90.draughts.DraughtsState;
 import nl.tue.s2id90.draughts.player.DraughtsPlayer;
-import nl.tue.s2id90.group27.evaluate.CompositeEvaluater;
 import org10x10.dam.game.Move;
 
 /**
@@ -17,7 +16,6 @@ import org10x10.dam.game.Move;
 //       for your player during the tournament
 public class AlphaBetaGroup27 extends DraughtsPlayer{
     private int bestValue=0;
-    private CompositeEvaluater evaluater;
     int maxSearchDepth;
 
     /** boolean that indicates that the GUI asked the player to stop thinking. */
@@ -26,7 +24,6 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
     public AlphaBetaGroup27(int maxSearchDepth) {
         super("best.png"); // ToDo: replace with your own icon
         this.maxSearchDepth = maxSearchDepth;
-        evaluater = (new CompositeEvaluater());
     }
 
     @Override public Move getMove(DraughtsState s) {
@@ -167,9 +164,12 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
      */
     // ToDo: write an appropriate evaluation function
     int evaluate(DraughtsState state) {
+        float result = 1000000;
+        
+        // START COUNTING PIECES
         int [] pieces  = state.getPieces();
-        int whiteValue = 0;
-        int blackValue = 0;
+        float whiteValue = 0f;
+        float blackValue = 0f;
 
         /* @todo Use cases instead of double loop */
         for (int i = 1; i < pieces.length; i++) {
@@ -188,6 +188,33 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             }
         }
         
-        return (int) ((whiteValue - blackValue) * evaluater.evaluate(state));
+        result *= (whiteValue - blackValue) / (whiteValue + blackValue);
+        // END COUNTING PIECES
+        
+        // START BALANCED POSITIONS
+            // @todo Implement this
+        // END BALANCED POSITIONS
+        
+        // START OUTPOSTS
+            // @todo Implement this
+        // END OUTPOSTS
+        
+        // START BREAK THROUGHS
+            // @todo Implement this
+        // END BREAK THROUGHS
+        
+        // START TEMPI
+            // @todo Implement this
+        // END TEMPI
+        
+        // START FORMATIONS
+            // @todo Implement this
+        // END FORMATIONS
+        
+        // START QUIET POSITIONS
+            // @todo Implement this
+        // END QUIET POSITIONS
+        
+        return (int) result;
     }
 }
