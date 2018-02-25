@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import nl.tue.s2id90.draughts.DraughtsState;
 import nl.tue.s2id90.draughts.player.DraughtsPlayer;
+import nl.tue.s2id90.group27.evaluate.CompositeEvaluater;
 import org10x10.dam.game.Move;
 
 /**
@@ -16,6 +17,7 @@ import org10x10.dam.game.Move;
 //       for your player during the tournament
 public class AlphaBetaGroup27 extends DraughtsPlayer{
     private int bestValue=0;
+    private CompositeEvaluater evaluater;
     int maxSearchDepth;
 
     /** boolean that indicates that the GUI asked the player to stop thinking. */
@@ -24,6 +26,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
     public AlphaBetaGroup27(int maxSearchDepth) {
         super("best.png"); // ToDo: replace with your own icon
         this.maxSearchDepth = maxSearchDepth;
+        evaluater = (new CompositeEvaluater());
     }
 
     @Override public Move getMove(DraughtsState s) {
@@ -168,6 +171,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         int whiteValue = 0;
         int blackValue = 0;
 
+        /* @todo Use cases instead of double loop */
         for (int i = 1; i < pieces.length; i++) {
             if (pieces[i] == DraughtsState.WHITEPIECE) {
                 whiteValue ++;
@@ -183,7 +187,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
                 blackValue += 3;
             }
         }
-
-        return whiteValue - blackValue;
+        
+        return (int) ((whiteValue - blackValue) * evaluater.evaluate(state));
     }
 }
