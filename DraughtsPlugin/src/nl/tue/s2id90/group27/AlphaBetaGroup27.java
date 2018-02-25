@@ -171,47 +171,46 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         float whiteValue = 0f;
         float blackValue = 0f;
 
-        /* @todo Use cases instead of double loop */
         for (int i = 1; i < pieces.length; i++) {
-            if (pieces[i] == DraughtsState.WHITEPIECE) {
-                whiteValue ++;
-            } else if (pieces[i] == DraughtsState.WHITEKING){
-                whiteValue += 3;
+            switch(pieces[i]) {
+                case DraughtsState.WHITEPIECE:
+                    whiteValue++;
+                    break;
+                case DraughtsState.WHITEKING:
+                    whiteValue += 3;
+                    break;
+                case DraughtsState.BLACKPIECE:
+                    blackValue++;
+                    break;
+                case DraughtsState.BLACKKING:
+                    blackValue += 3;
+                    break;     
             }
         }
-
-        for (int i = 1; i < pieces.length; i++) {
-            if (pieces[i] == DraughtsState.BLACKPIECE) {
-                blackValue ++;
-            } else if (pieces[i] == DraughtsState.BLACKKING){
-                blackValue += 3;
-            }
-        }
-        
         result *= (whiteValue - blackValue) / (whiteValue + blackValue);
         // END COUNTING PIECES
         
-        // START BALANCED POSITIONS
+        // START BALANCED POSITIONS (Adriaan)
             // @todo Implement this
         // END BALANCED POSITIONS
         
-        // START OUTPOSTS
+        // START OUTPOSTS (Abdel)
             // @todo Implement this
         // END OUTPOSTS
         
-        // START BREAK THROUGHS
+        // START BREAK THROUGHS (Abdel)
             // @todo Implement this
         // END BREAK THROUGHS
         
-        // START TEMPI
+        // START TEMPI (Abdel)
             // @todo Implement this
         // END TEMPI
         
-        // START FORMATIONS
+        // START FORMATIONS (Adriaan)
             // @todo Implement this
         // END FORMATIONS
         
-        // START QUIET POSITIONS
+        // START QUIET POSITIONS (Optional)
             // @todo Implement this
         // END QUIET POSITIONS
         
