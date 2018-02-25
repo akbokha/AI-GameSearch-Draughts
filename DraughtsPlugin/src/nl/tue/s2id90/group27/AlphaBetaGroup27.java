@@ -121,13 +121,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         }
         for (Move move : state.getMoves()) {
             state.doMove(move);
-            int result;
-            try {
-                result = alphaBetaMax(node, alpha, beta, depth - 1, false);
-            } catch (AIStoppedException e) {
-                state.undoMove(move);
-                throw e;
-            }
+            int result = alphaBetaMax(node, alpha, beta, depth - 1, false);
             state.undoMove(move);
             if (result < beta) {
                 beta = result;
@@ -150,13 +144,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         }
         for (Move move : state.getMoves()) {
             state.doMove(move);
-            int result;
-            try {
-                result = alphaBetaMin(node, alpha, beta, depth - 1, false);
-            } catch (AIStoppedException e) {
-                state.undoMove(move);
-                throw e;
-            }
+            int result = alphaBetaMin(node, alpha, beta, depth - 1, false);
             state.undoMove(move);
             if (result > alpha) {
                 alpha = result;
