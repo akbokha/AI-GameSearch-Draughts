@@ -165,6 +165,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
     // ToDo: write an appropriate evaluation function
     int evaluate(DraughtsState state) {
         float result = 1000000;
+        final int KINGVALUE = 3;
         
         // START COUNTING PIECES
         int [] pieces  = state.getPieces();
@@ -177,21 +178,68 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
                     whiteValue++;
                     break;
                 case DraughtsState.WHITEKING:
-                    whiteValue += 3;
+                    whiteValue += KINGVALUE;
                     break;
                 case DraughtsState.BLACKPIECE:
                     blackValue++;
                     break;
                 case DraughtsState.BLACKKING:
-                    blackValue += 3;
+                    blackValue += KINGVALUE;
                     break;     
             }
         }
-        result *= (whiteValue - blackValue) / (whiteValue + blackValue);
+        result *= whiteValue / (whiteValue + blackValue);
         // END COUNTING PIECES
         
         // START BALANCED POSITIONS (Adriaan)
-            // @todo Implement this
+        int[] balanceScores = {0, 0};
+        for (int i = 1; i < pieces.length; i++) {
+            int pieceValue = 0;
+            int index = 0;
+            switch(pieces[i]) {
+                case DraughtsState.WHITEPIECE:
+                    pieceValue = 1;
+                    index = 0;
+                    break;
+                case DraughtsState.WHITEKING:
+                    pieceValue = KINGVALUE;
+                    index = 0;
+                    break;
+                case DraughtsState.BLACKPIECE:
+                    pieceValue = 1;
+                    index = 1;
+                    break;
+                case DraughtsState.BLACKKING:
+                    pieceValue = KINGVALUE;
+                    index = 1;
+                    break; 
+            }
+                
+            // Decide if the piece is on the left or the right side of the board.
+            int relativePosition = (i - 1) % 10;
+            if (relativePosition >= 5 == (2 < relativePosition && relativePosition <= 8)) { // Left
+                balanceScores[index] += pieceValue;
+            } else { // Right
+                balanceScores[index] -= pieceValue;
+            }
+        }
+        
+        // Take the absolute value of both balance scores
+        if (balanceScores[0] < 0) {
+            balanceScores[0] = -balanceScores[0];
+        }
+        if (balanceScores[1] < 0) {
+            balanceScores[1] = -balanceScores[1];
+        }
+        
+        /*
+        * Vector: (1 - 20% * balanceScore[white] / #white) * (1 + 20% * balanceScore[black] / # black)
+        * Rational: A high balance score implies an unbalanced board for the
+        *       corresponding color. Hence a high balance score for white should
+        *       negatively impact the score, and a high balance score for black
+        *       is positive for white and should therefore increase the score.
+        */
+        result *= (1 - .2f * ((balanceScores[0] / whiteValue) + (balanceScores[1] / blackValue)));
         // END BALANCED POSITIONS
         
         // START OUTPOSTS (Abdel)
