@@ -30,21 +30,22 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         Move bestMove = null;
         bestValue = 0;
         DraughtsNode node = new DraughtsNode(s);    // the root of the search tree
-            try {
+        try {
+            for (int i = 1; i <= maxSearchDepth; i++) {
                 // compute bestMove and bestValue in a call to alphabeta
-                bestValue = alphaBeta(node, MIN_VALUE, MAX_VALUE, maxSearchDepth);
+                bestValue = alphaBeta(node, MIN_VALUE, MAX_VALUE, i);
 
                 // store the bestMove found uptill now
                 // NB this is not done in case of an AIStoppedException in alphaBeta()
                 bestMove  = node.getBestMove();
-
+                
                 // print the results for debugging reasons
                 System.err.format(
                     "%s: depth= %2d, best move = %5s, value=%d\n", 
-                    this.getClass().getSimpleName(),maxSearchDepth, bestMove, bestValue
+                    this.getClass().getSimpleName(),i, bestMove, bestValue
                 );
-            } catch (AIStoppedException ex) { }
-        
+            }
+        } catch (AIStoppedException ex) {}
         if (bestMove==null) {
             System.err.println("no valid move found!");
             return getRandomValidMove(s);
@@ -118,16 +119,16 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         if (depth == 0 || state.isEndState()) {
             return evaluate(state);
         }
-        List<Move> moves = state.getMoves();
-        if (moves.isEmpty()) {
-            return MAX_VALUE;
-        }
-        for (Move move : moves) {
+        for (Move move : state.getMoves()) {
             state.doMove(move);
-            DraughtsNode newState = new DraughtsNode(state);
-            System.out.println(newState);
+            int result;
+            try {
+                result = alphaBetaMax(node, alpha, beta, depth - 1, false);
+            } catch (AIStoppedException e) {
+                state.undoMove(move);
+                throw e;
+            }
             state.undoMove(move);
-            int result = alphaBetaMax(newState, alpha, beta, depth - 1, false);
             if (result < beta) {
                 beta = result;
                 if (isRoot)
@@ -147,16 +148,16 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         if (depth == 0 || state.isEndState()) {
             return evaluate(state);
         }
-        List<Move> moves = state.getMoves();
-        if (moves.isEmpty()) {
-            return MIN_VALUE;
-        }
-        for (Move move : moves) {
+        for (Move move : state.getMoves()) {
             state.doMove(move);
-            DraughtsNode newState = new DraughtsNode(state);
-            System.out.println(newState);
+            int result;
+            try {
+                result = alphaBetaMin(node, alpha, beta, depth - 1, false);
+            } catch (AIStoppedException e) {
+                state.undoMove(move);
+                throw e;
+            }
             state.undoMove(move);
-            int result = alphaBetaMin(newState, alpha, beta, depth - 1, false);
             if (result > alpha) {
                 alpha = result;
                 if (isRoot)
