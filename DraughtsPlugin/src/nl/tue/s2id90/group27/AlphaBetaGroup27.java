@@ -167,7 +167,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         float result = 1000000;
         final int KINGVALUE = 3;
         
-        // START COUNTING PIECES
+    // START COUNTING PIECES
         int [] pieces  = state.getPieces();
         float whiteValue = 0f;
         float blackValue = 0f;
@@ -189,10 +189,10 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             }
         }
         result *= whiteValue / (whiteValue + blackValue);
-        // END COUNTING PIECES
+    // END COUNTING PIECES
         
-        // START BALANCED POSITIONS (Adriaan)
-        int[] balanceScores = {0, 0};
+    // START BALANCED POSITIONS (Adriaan)
+        float[] balanceScores = {0, 0};
         for (int i = 1; i < pieces.length; i++) {
             int pieceValue = 0;
             int index = 0;
@@ -240,9 +240,9 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         *       is positive for white and should therefore increase the score.
         */
         result *= (1 - .2f * ((balanceScores[0] / whiteValue) + (balanceScores[1] / blackValue)));
-        // END BALANCED POSITIONS
+    // END BALANCED POSITIONS
         
-        // START OUTPOSTS (Abdel)
+    // START OUTPOSTS (Abdel)
         
         /*  The result (float) checks/quantifies if pieces on 6 <= row < 10 are defended
             King moves/situations are excluded from the defending part
@@ -302,26 +302,128 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             }
         }
         
-        float outpostResult = (whiteDefendedOutpostPieces / whiteOutpostPieces) - (blackDefendedOutpostPieces / blackOutpostPieces);
-        outpostResult = (outpostResult == 0) ? 1f : outpostResult;
+//        float outpostResult = (whiteDefendedOutpostPieces / whiteOutpostPieces) - (blackDefendedOutpostPieces / blackOutpostPieces);
+//        outpostResult = (outpostResult == 0) ? 1f : outpostResult;
         
-        // END OUTPOSTS
-        
-        // START BREAK THROUGHS (Abdel)
+    // END OUTPOSTS
+
+    // START BREAK THROUGHS (Abdel)
             // @todo Implement this
-        // END BREAK THROUGHS
-        
-        // START TEMPI (Abdel)
+    // END BREAK THROUGHS
+
+    // START TEMPI (Abdel)
             // @todo Implement this
-        // END TEMPI
-        
-        // START FORMATIONS (Adriaan)
+    // END TEMPI
+
+    // START FORMATIONS (Adriaan)
+            /*
+             * Remapped all indexes for a more efficient storage, indexes of other
+             * (diagonally positioned) cells in the original form can be retrieved
+             * in the following matter:
+             * Column  :  C = (i mod 4) + 1
+             * Row     :  R = floor(i / 4)   
+             * Top left     = 5R + C
+             * Top right    = 5R + C + 1
+             * Bottom left  = 5(R + 2) + C     = 5R + C + 10
+             * Bottom right = 5(R + 2) + C + 1 = 5R + C + 11
+             * Self         = if R is even : 5(R + 1) + C + 2 = 5R + C + 7
+             *                if R is odd  : 5(R + 1) + C + 1 = 5R + C + 6
+             *   col  0  1  2  3  4  5  6  7  8  9
+             *  row ------------------------------
+             *   0  |    0x    0x    0x    0x    0x
+             *      |
+             *   1  | 0x    00    01    02    03
+             *      |
+             *   2  |    04    05    06    07    0x
+             *      |
+             *   3  | 0x    08    09    10    11
+             *      |
+             *   4  |    12    13    14    15    0x
+             *      |
+             *   5  | 0x    16    17    18    19
+             *      |
+             *   6  |    20    21    22    23    0x
+             *      |
+             *   7  | 0x    24    25    26    27
+             *      |
+             *   8  |    28    29    30    31    0x
+             *      |
+             *   9  | 0x    0x    0x    0x    0x
+             */
+            int whiteGates = 0;
+            int blackGates = 0;
+           
+            int[] diagonalIndex1 = new int[32];
+            int[] diagonalIndex2 = new int[32];
+            for (int i = 0; i < 32; i++) {
+                int c = (i % 4) + 1;
+                int r = i / 4;
+                int tl = 5*r + c;
+                int tr = 5*r + c + 1;
+                int bl = 5*r + c + 10;
+                int br = 5*r + c + 11;
+                int sl; // Self
+                if (r % 2 == 0) { // Even
+                    sl = 5*r + c + 7;
+                } else {
+                    sl = 5*r + c + 6;
+                }
+               
+                if (    
+                       (pieces[tl] == DraughtsState.WHITEKING || pieces[tl] == DraughtsState.WHITEPIECE)
+                    && (pieces[sl] == DraughtsState.WHITEKING || pieces[sl] == DraughtsState.WHITEPIECE)
+                    && (pieces[br] == DraughtsState.WHITEKING || pieces[br] == DraughtsState.WHITEPIECE)
+                ) {
+                    diagonalIndex1[i] = 1;
+                } else if (
+                       (pieces[tl] == DraughtsState.BLACKKING || pieces[tl] == DraughtsState.BLACKPIECE)
+                    && (pieces[sl] == DraughtsState.BLACKKING || pieces[sl] == DraughtsState.BLACKPIECE)
+                    && (pieces[br] == DraughtsState.BLACKKING || pieces[br] == DraughtsState.BLACKPIECE)
+                ) {
+                    diagonalIndex1[i] = -1;
+                }
+                
+                if (    
+                       (pieces[tr] == DraughtsState.WHITEKING || pieces[tr] == DraughtsState.WHITEPIECE)
+                    && (pieces[sl] == DraughtsState.WHITEKING || pieces[sl] == DraughtsState.WHITEPIECE)
+                    && (pieces[bl] == DraughtsState.WHITEKING || pieces[bl] == DraughtsState.WHITEPIECE)
+                ) {
+                    diagonalIndex2[i] = 1;
+                } else if (
+                       (pieces[tr] == DraughtsState.BLACKKING || pieces[tr] == DraughtsState.BLACKPIECE)
+                    && (pieces[sl] == DraughtsState.BLACKKING || pieces[sl] == DraughtsState.BLACKPIECE)
+                    && (pieces[bl] == DraughtsState.BLACKKING || pieces[bl] == DraughtsState.BLACKPIECE)
+                ) {
+                    diagonalIndex2[i] = -1;
+                }
+                
+                if (diagonalIndex1[i] != 0 && diagonalIndex1[i] == diagonalIndex2[i]) {
+                    if (diagonalIndex1[i] == 1) { // White gate
+                        whiteGates += 1;
+                    } else { // Black gate
+                        blackGates += 1;
+                    }
+                }
+            }
+            if (whiteGates + blackGates > 0) {
+                result *= 1 + .1f * (whiteGates - blackGates) / (float) (whiteGates + blackGates);
+            }
+    // END FORMATIONS
+
+    // START QUIET POSITIONS (Optional)
             // @todo Implement this
-        // END FORMATIONS
-        
-        // START QUIET POSITIONS (Optional)
-            // @todo Implement this
-        // END QUIET POSITIONS
+            /*
+             * Just a thought: when reaching the deepest level (depth == 1) then
+             * (recursively) evaluate all moves which involve taking a piece, or
+             * just the current situation if no preceding move takes a piece. 
+             * This should be easy to detect, since if any move can take a 
+             * piece, then it will do so, thus in order to check if any move
+             * takes a piece we just evaluate any preceding move.
+             * Note: Generating all moves might be computationally intensive,
+             * hence we might want to check manually if it is possible to take
+             * any piece before computing all moves.
+             */
+    // END QUIET POSITIONS
         
         return (int) result;
     }
