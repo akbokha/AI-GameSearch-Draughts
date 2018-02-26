@@ -243,7 +243,68 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         // END BALANCED POSITIONS
         
         // START OUTPOSTS (Abdel)
-            // @todo Implement this
+        
+        /*  The result (float) checks/quantifies if pieces on 6 <= row < 10 are defended
+            King moves/situations are excluded from the defending part
+        */
+        int whiteDefendedOutpostPieces, whiteOutpostPieces, blackDefendedOutpostPieces, blackOutpostPieces;
+        whiteDefendedOutpostPieces = whiteOutpostPieces = blackDefendedOutpostPieces = blackOutpostPieces = 0;
+        
+        int whiteLeftDefender, whiteRightDefender, blackLeftDefender, blackRightDefender;
+        whiteLeftDefender = blackRightDefender = 4;
+        whiteRightDefender = blackLeftDefender = 5;
+        
+        int skipLastRow = 5; // for explanatory purposes
+        
+        for (int i = (1 + skipLastRow); i < 26; i++) { // white's perspective
+            int pos = pieces[i];
+            if ((pos == DraughtsState.WHITEPIECE) || (pos == DraughtsState.WHITEKING)) {
+                whiteOutpostPieces += 4; // each outpost piece can be defended from two sides (excl. king moves)
+                if (((pos % 10) == 5) || (pos % 10) == 6){ // is placed on one of the edges
+                    whiteDefendedOutpostPieces += 4;
+                } else { // check if it is defended
+                    if (((pos + whiteLeftDefender) == DraughtsState.WHITEPIECE) || ((pos + whiteLeftDefender) == DraughtsState.WHITEKING)) {
+                        whiteDefendedOutpostPieces++; // is defended from the left
+                    }
+                    if (((pos + whiteRightDefender) == DraughtsState.WHITEPIECE) || ((pos + whiteRightDefender) == DraughtsState.WHITEKING)) {
+                        whiteDefendedOutpostPieces++; // is defended from the right
+                    }
+                    if (((pos - whiteLeftDefender) == DraughtsState.WHITEPIECE) || ((pos - whiteLeftDefender) == DraughtsState.WHITEKING)) {
+                        whiteDefendedOutpostPieces++; // is defended from the left
+                    }
+                    if (((pos - whiteRightDefender) == DraughtsState.WHITEPIECE) || ((pos - whiteRightDefender) == DraughtsState.WHITEKING)) {
+                        whiteDefendedOutpostPieces++; // is defended from the right
+                    }
+                }
+            }
+        }
+        
+        for (int i = 26; i < (pieces.length - skipLastRow); i++) { // black's perpective
+            int pos = pieces[i];
+            if ((pos == DraughtsState.BLACKPIECE) || (pos == DraughtsState.BLACKKING)) {
+                blackOutpostPieces += 4; // each outpost piece can be defended from two sides (excl. king moves)
+                if (((pos % 10) == 5) || (pos % 10) == 6){ // is placed on one of the edges
+                    blackDefendedOutpostPieces += 4;
+                } else { // check if it is defended
+                    if (((pos - blackLeftDefender) == DraughtsState.BLACKPIECE) || ((pos - blackLeftDefender) == DraughtsState.BLACKKING)) {
+                        blackDefendedOutpostPieces++; // is defended from the left
+                    }
+                    if (((pos - blackRightDefender) == DraughtsState.BLACKPIECE) || ((pos - blackRightDefender) == DraughtsState.BLACKKING)) {
+                        blackDefendedOutpostPieces++; // is defended from the right
+                    }
+                    if (((pos + blackLeftDefender) == DraughtsState.BLACKPIECE) || ((pos + blackLeftDefender) == DraughtsState.BLACKKING)) {
+                        blackDefendedOutpostPieces++; // is defended from the left
+                    }
+                    if (((pos + blackRightDefender) == DraughtsState.BLACKPIECE) || ((pos + blackRightDefender) == DraughtsState.BLACKKING)) {
+                        blackDefendedOutpostPieces++; // is defended from the right
+                    }
+                }
+            }
+        }
+        
+        float outpostResult = (whiteDefendedOutpostPieces / whiteOutpostPieces) - (blackDefendedOutpostPieces / blackOutpostPieces);
+        outpostResult = (outpostResult == 0) ? 1f : outpostResult;
+        
         // END OUTPOSTS
         
         // START BREAK THROUGHS (Abdel)
