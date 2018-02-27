@@ -5,8 +5,6 @@ import static java.lang.Integer.MIN_VALUE;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.stream.IntStream;
 import nl.tue.s2id90.draughts.DraughtsState;
 import nl.tue.s2id90.draughts.player.DraughtsPlayer;
@@ -18,16 +16,15 @@ import org10x10.dam.game.Move;
  */
 // ToDo: rename this class (and hence this file) to have a distinct name
 //       for your player during the tournament
-public class AlphaBetaGroup27 extends DraughtsPlayer{
+public class AlphaBetaGroup27_old extends DraughtsPlayer{
     private int bestValue=0;
     int maxSearchDepth;
-    private SortedMap<Integer, Move> bestRootMoves;
     int countEval;
 
     /** boolean that indicates that the GUI asked the player to stop thinking. */
     private boolean stopped;
 
-    public AlphaBetaGroup27(int maxSearchDepth) {
+    public AlphaBetaGroup27_old(int maxSearchDepth) {
         super("best.png"); // ToDo: replace with your own icon
         this.maxSearchDepth = maxSearchDepth;
     }
@@ -36,26 +33,6 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         Move bestMove = null;
         bestValue = 0;
         DraughtsNode node = new DraughtsNode(s);    // the root of the search tree
-        final DraughtsState state = node.getState();
-        
-        // Initially fill the best root moves map.
-        List<Move> moves = state.getMoves();
-        if (state.isWhiteToMove()) {
-            bestRootMoves = new TreeMap<>((t, t1) -> {
-                return t1 - t;
-            });
-            int count = MIN_VALUE;
-            for (Move move : moves) {
-                bestRootMoves.put(count++, move);
-            }
-        } else {
-            bestRootMoves = new TreeMap<>();
-            int count = MAX_VALUE;
-            for (Move move : moves) {
-                bestRootMoves.put(count--, move);
-            }
-        }
-        
         try {
             countEval = 0;
             for (int i = 1; i <= maxSearchDepth; i++) {
@@ -149,46 +126,17 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         if (depth == 0) {
             return evaluate(state, false);
         }
-        if (isRoot) {
-            SortedMap<Integer, Move> newBestRootMoves = new TreeMap<>();
-            
-            boolean finished = false;
-            int count = MAX_VALUE - 1000;
-            
-            for (Move move : bestRootMoves.values()) {
-                if (finished) {
-                    newBestRootMoves.put(count++, move);
-                } else {
-                    state.doMove(move);
-                    int result = alphaBetaMax(node, alpha, beta, depth - 1, false);
-                    state.undoMove(move);
-
-                    while (newBestRootMoves.containsKey(result)) result++; // Increment the key until no key collisions are present anymore. (Underestimates the quality).
-                    newBestRootMoves.put(result, move);
-
-                    if (result < beta) {
-                        beta = result;
-                        node.setBestMove(move);
-                    }
-                    if (beta <= alpha) {
-                        finished = true;
-                    }
-                }
+        for (Move move : state.getMoves()) {
+            state.doMove(move);
+            int result = alphaBetaMax(node, alpha, beta, depth - 1, false);
+            state.undoMove(move);
+            if (result < beta) {
+                beta = result;
+                if (isRoot)
+                    node.setBestMove(move);
             }
-            
-            // Update the root moves such that we can use them for the next iteration of iterative deepening.
-            bestRootMoves = newBestRootMoves;
-        } else {
-            for (Move move : state.getMoves()) {
-                state.doMove(move);
-                int result = alphaBetaMax(node, alpha, beta, depth - 1, false);
-                state.undoMove(move);
-                if (result < beta) {
-                    beta = result;
-                }
-                if (beta <= alpha) {
-                    return beta;
-                }
+            if (beta <= alpha) {
+                return beta;
             }
         }
         return beta;
@@ -204,48 +152,17 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         if (depth == 0) {
             return evaluate(state, false);
         }
-        if (isRoot) {
-            SortedMap<Integer, Move> newBestRootMoves = new TreeMap<>((t, t1) -> {
-                return t1 - t;
-            });
-            
-            boolean finished = false;
-            int count = MIN_VALUE + 1000;
-            
-            for (Move move : bestRootMoves.values()) {
-                if (finished) {
-                    newBestRootMoves.put(count--, move);
-                } else {
-                    state.doMove(move);
-                    int result = alphaBetaMin(node, alpha, beta, depth - 1, false);
-                    state.undoMove(move);
-                    
-                    while (newBestRootMoves.containsKey(result)) result--; // Decrease the key until no collisions are present anymore. (Underestimates the quality)
-                    newBestRootMoves.put(result, move);
-
-                    if (result > alpha) {
-                        alpha = result;
-                        node.setBestMove(move);
-                    }
-                    if (alpha >= beta) {
-                        finished = true;
-                    }
-                }
+        for (Move move : state.getMoves()) {
+            state.doMove(move);
+            int result = alphaBetaMin(node, alpha, beta, depth - 1, false);
+            state.undoMove(move);
+            if (result > alpha) {
+                alpha = result;
+                if (isRoot)
+                    node.setBestMove(move);
             }
-            
-            // Update the root moves such that we can use them for the next iteration of iterative deepening.
-            bestRootMoves = newBestRootMoves;
-        } else {
-            for (Move move : state.getMoves()) {
-                state.doMove(move);
-                int result = alphaBetaMin(node, alpha, beta, depth - 1, false);
-                state.undoMove(move);
-                if (result > alpha) {
-                    alpha = result;
-                }
-                if (alpha >= beta) {
-                    return alpha;
-                }
+            if (alpha >= beta) {
+                return alpha;
             }
         }
         return alpha;
@@ -620,7 +537,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             }
         }
 //        for (int i = pieces.length - 1; i >= pieces.length - row; i++) {
-//            if (!(pieces[i] == DraughtsState.WHITEPIECE || pieces[i] == DraughtsState.WHITEKING)) { // Got an array out of bounds exception (index = 51)
+//            if (!(pieces[i] == DraughtsState.WHITEPIECE || pieces[i] == DraughtsState.WHITEKING)) {
 //                unoccupiedBaseLineSpotsWhitePlayer++;
 //            }
 //        }
