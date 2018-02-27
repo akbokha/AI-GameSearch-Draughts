@@ -117,7 +117,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         if (stopped) { stopped = false; System.err.println("stop"); throw new AIStoppedException(); }
         DraughtsState state = node.getState();
         if (depth == 0 || state.isEndState()) {
-            return evaluate(state);
+            return evaluate(state, state.isEndState());
         }
         for (Move move : state.getMoves()) {
             state.doMove(move);
@@ -140,7 +140,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         if (stopped) { stopped = false; System.err.println("stop"); throw new AIStoppedException(); }
         DraughtsState state = node.getState();
         if (depth == 0 || state.isEndState()) {
-            return evaluate(state);
+            return evaluate(state, state.isEndState());
         }
         for (Move move : state.getMoves()) {
             state.doMove(move);
@@ -157,13 +157,13 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         }
         return alpha;
     }
-
+    
     /**
      * A method that evaluates the given state.
      * Note: White wants to maximize this function, black to minimize.
      */
     // ToDo: write an appropriate evaluation function
-    int evaluate(DraughtsState state) {
+    int evaluate(DraughtsState state, boolean endState) {
         float result = 1000000;
         final int KINGVALUE = 3;
         
@@ -188,6 +188,11 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
                     break;     
             }
         }
+        
+        if (endState) {
+            return (int) (result * 10 * (whiteValue - blackValue));
+        }
+        
         result *= whiteValue / (whiteValue + blackValue);
     // END COUNTING PIECES
         
@@ -233,13 +238,13 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         }
         
         /*
-        * Vector: (1 - 20% * balanceScore[white] / #white) * (1 + 20% * balanceScore[black] / # black)
+        * Vector: (1 - 10% * balanceScore[white] / #white) * (1 + 20% * balanceScore[black] / # black)
         * Rational: A high balance score implies an unbalanced board for the
         *       corresponding color. Hence a high balance score for white should
         *       negatively impact the score, and a high balance score for black
         *       is positive for white and should therefore increase the score.
         */
-        result *= (1 - .2f * ((balanceScores[0] / whiteValue) + (balanceScores[1] / blackValue)));
+        result *= (1 - .1f * ((balanceScores[0] / whiteValue) - (balanceScores[1] / blackValue)));
     // END BALANCED POSITIONS
         
     // START OUTPOSTS (Abdel)
@@ -406,7 +411,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
                 }
             }
             if (whiteGates + blackGates > 0) {
-                result *= 1 + .1f * (whiteGates - blackGates) / (float) (whiteGates + blackGates);
+                result *= 1 + .05f * (whiteGates - blackGates) / (float) (whiteGates + blackGates);
             }
     // END FORMATIONS
 

@@ -18,31 +18,7 @@ public class BasicAlphaBetaGroup27 extends AlphaBetaGroup27 {
     }
 
     @Override
-    int evaluate(DraughtsState state) {
-        // START COUNTING PIECES
-        int [] pieces  = state.getPieces();
-        int whiteValue = 0;
-        int blackValue = 0;
-
-        for (int i = 1; i < pieces.length; i++) {
-            switch(pieces[i]) {
-                case DraughtsState.WHITEPIECE:
-                    whiteValue++;
-                    break;
-                case DraughtsState.WHITEKING:
-                    whiteValue += 3;
-                    break;
-                case DraughtsState.BLACKPIECE:
-                    blackValue++;
-                    break;
-                case DraughtsState.BLACKKING:
-                    blackValue += 3;
-                    break;     
-            }
-        }
-        
-        return whiteValue - blackValue;
+    int evaluate(DraughtsState state, boolean endState) {
+        return super.evaluate(state, true);
     }
-    
-    
 }
