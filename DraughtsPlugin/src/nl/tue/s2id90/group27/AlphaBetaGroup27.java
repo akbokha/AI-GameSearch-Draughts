@@ -2,6 +2,7 @@ package nl.tue.s2id90.group27;
 
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import nl.tue.s2id90.draughts.DraughtsState;
@@ -254,9 +255,9 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         whiteLeftDefender = blackRightDefender = 4;
         whiteRightDefender = blackLeftDefender = 5;
         
-        int skipLastRow = 5; // for explanatory purposes
+        int row = 5; // for explanatory purposes
         
-        for (int i = (1 + skipLastRow); i < 26; i++) { // white's perspective
+        for (int i = (1 + row); i < 26; i++) { // white's perspective
             int pos = pieces[i];
             if ((pos == DraughtsState.WHITEPIECE) || (pos == DraughtsState.WHITEKING)) {
                 whiteOutpostPieces += 4; // each outpost piece can be defended from two sides (excl. king moves)
@@ -279,7 +280,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             }
         }
         
-        for (int i = 26; i < (pieces.length - skipLastRow); i++) { // black's perpective
+        for (int i = 26; i < (pieces.length - row); i++) { // black's perpective
             int pos = pieces[i];
             if ((pos == DraughtsState.BLACKPIECE) || (pos == DraughtsState.BLACKKING)) {
                 blackOutpostPieces += 4; // each outpost piece can be defended from two sides (excl. king moves)
@@ -301,14 +302,49 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
                 }
             }
         }
+        float outpostResult = 1f;
+        float outpostFactor = 0.1f;
+        int undefendedBlackPieces = blackOutpostPieces - blackDefendedOutpostPieces;
+        int undefendedWhitePieces = whiteOutpostPieces - whiteDefendedOutpostPieces;
         
-//        float outpostResult = (whiteDefendedOutpostPieces / whiteOutpostPieces) - (blackDefendedOutpostPieces / blackOutpostPieces);
-//        outpostResult = (outpostResult == 0) ? 1f : outpostResult;
+        if (whiteOutpostPieces == 0 && blackOutpostPieces != 0) {
+            outpostResult += outpostFactor *(undefendedBlackPieces / blackOutpostPieces);
+        } else if (whiteOutpostPieces != 0 && blackOutpostPieces == 0) {
+            outpostResult -= outpostFactor *(undefendedWhitePieces / whiteDefendedOutpostPieces);
+        } else if (whiteOutpostPieces != 0 && blackOutpostPieces != 0) {
+            outpostResult += outpostFactor *((undefendedBlackPieces / blackOutpostPieces) - (undefendedWhitePieces / whiteDefendedOutpostPieces));
+        }
+        result *= outpostResult;
         
     // END OUTPOSTS
 
     // START BREAK THROUGHS (Abdel)
-            // @todo Implement this
+    float breakthroughFactor = 0.05f;
+    
+    ArrayList<Integer> blackProtectedBaseLineSpots = new ArrayList<>();
+    ArrayList<Integer> blackUnprotectedBaseLineSpots = new ArrayList<>();
+    ArrayList<Integer> whiteProtectedBaseLineSpots = new ArrayList<>();
+    ArrayList<Integer> whiteUnprotectedBaseLineSpots = new ArrayList<>();
+    
+    for (int i = 1; i <= row; i++) {
+        int pos = pieces[i];
+        if(pos == DraughtsState.BLACKPIECE || pos == DraughtsState.BLACKKING){
+            blackProtectedBaseLineSpots.add(i);
+        } else {
+            blackUnprotectedBaseLineSpots.add(i);
+        }
+    }
+    
+    for (int i = pieces.length - 1; i >= pieces.length - row ; i--) {
+        int pos = pieces[i];
+        if(pos == DraughtsState.WHITEPIECE || pos == DraughtsState.WHITEKING){
+            whiteProtectedBaseLineSpots.add(i);
+        } else {
+            whiteUnprotectedBaseLineSpots.add(i);
+        }
+    }
+    
+    result *= breakthroughFactor * (1 + blackUnprotectedBaseLineSpots.size() / 5 -  whiteProtectedBaseLineSpots.size() / 5);
     // END BREAK THROUGHS
 
     // START TEMPI (Abdel)
