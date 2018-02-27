@@ -34,9 +34,9 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         Move bestMove = null;
         bestValue = 0;
         DraughtsNode node = new DraughtsNode(s);    // the root of the search tree
-        int i;
+        int i = 1;
         try {
-            for (i = 1; i <= maxSearchDepth; i++) {
+            for (; i <= maxSearchDepth; i++) {
                 // compute bestMove and bestValue in a call to alphabeta
                 bestValue = alphaBeta(node, MIN_VALUE, MAX_VALUE, i);
 
@@ -126,7 +126,9 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         if (depth == 0) {
             return evaluate(state, false);
         }
-        for (Move move : state.getMoves()) {
+        List<Move> moves = state.getMoves();
+        Collections.shuffle(moves);
+        for (Move move : moves) {
             state.doMove(move);
             int result = alphaBetaMax(node, alpha, beta, depth - 1, false);
             state.undoMove(move);
@@ -152,8 +154,9 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         if (depth == 0) {
             return evaluate(state, false);
         }
-        List<Move> = Collection.(state.getMoves())
-        for (Move move : ) {
+        List<Move> moves = state.getMoves();
+        Collections.shuffle(moves);
+        for (Move move : moves) {
             state.doMove(move);
             int result = alphaBetaMin(node, alpha, beta, depth - 1, false);
             state.undoMove(move);
