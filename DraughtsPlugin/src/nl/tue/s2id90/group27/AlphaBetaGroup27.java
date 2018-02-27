@@ -116,8 +116,11 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             throws AIStoppedException {
         if (stopped) { stopped = false; System.err.println("stop"); throw new AIStoppedException(); }
         DraughtsState state = node.getState();
-        if (depth == 0 || state.isEndState()) {
-            return evaluate(state, state.isEndState());
+        if (state.isEndState()) {
+            return evaluate(state, true);
+        }
+        if (depth == 0) {
+            return evaluate(state, false);
         }
         for (Move move : state.getMoves()) {
             state.doMove(move);
@@ -139,8 +142,11 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             throws AIStoppedException {
         if (stopped) { stopped = false; System.err.println("stop"); throw new AIStoppedException(); }
         DraughtsState state = node.getState();
-        if (depth == 0 || state.isEndState()) {
-            return evaluate(state, state.isEndState());
+        if (state.isEndState()) {
+            return evaluate(state, true);
+        }
+        if (depth == 0) {
+            return evaluate(state, false);
         }
         for (Move move : state.getMoves()) {
             state.doMove(move);
