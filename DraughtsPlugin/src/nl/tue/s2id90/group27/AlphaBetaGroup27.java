@@ -370,16 +370,16 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
      * The black player's number is then subtracted from the white player's number and multiplied by a certain factor.
      */
     int [] blackPlayerMultipliers = new int []{ 
-        1, 1, 1, 1, 1, // // can be done more egelantly, but this also fulfilss explanatory purposes.
-        2, 2, 2, 2, 2,
-        3, 3, 3, 3, 3,
-        4, 4, 4, 4, 4,
-        5, 5, 5, 5, 5,
-        6, 6, 6, 6, 6,
-        7, 7, 7, 7, 7,
-        8, 8, 8, 8, 8,
-        9, 9, 9, 9, 9,
-        10, 10, 10, 10, 10
+         1,  1,  1,  1,  1, // // can be done more egelantly, but this also fullfilss explanatory purposes.
+         2,  2,  2,  2,  2,
+         3,  3,  3,  3,  3,
+         4,  4,  4,  4,  4,
+         5,  5,  5,  5,  5,
+         6,  6,  6,  6,  6,
+         7,  7,  7,  7,  7,
+         8,  8,  8,  8,  8,
+         9,  9,  9,  9,  9,
+        10, 10, 10, 10, 10,
     };
     
     int [] whitePlayerMultipliers = IntStream.rangeClosed(1, blackPlayerMultipliers.length).map(i -> blackPlayerMultipliers[blackPlayerMultipliers.length-i]).toArray();
