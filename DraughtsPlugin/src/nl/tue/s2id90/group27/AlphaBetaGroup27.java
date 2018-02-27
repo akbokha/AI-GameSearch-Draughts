@@ -4,6 +4,7 @@ import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -33,22 +34,22 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         Move bestMove = null;
         bestValue = 0;
         DraughtsNode node = new DraughtsNode(s);    // the root of the search tree
+        int i;
         try {
-            for (int i = 1; i <= maxSearchDepth; i++) {
+            for (i = 1; i <= maxSearchDepth; i++) {
                 // compute bestMove and bestValue in a call to alphabeta
                 bestValue = alphaBeta(node, MIN_VALUE, MAX_VALUE, i);
 
                 // store the bestMove found uptill now
                 // NB this is not done in case of an AIStoppedException in alphaBeta()
                 bestMove  = node.getBestMove();
-                
-                // print the results for debugging reasons
-                System.err.format(
-                    "%s: depth= %2d, best move = %5s, value=%d\n", 
-                    this.getClass().getSimpleName(),i, bestMove, bestValue
-                );
             }
         } catch (AIStoppedException ex) {}
+        // print the results for debugging reasons
+        System.err.format(
+            "%s: depth= %2d, best move = %5s, value=%d\n", 
+            this.getClass().getSimpleName(),i, bestMove, bestValue
+        );
         if (bestMove==null) {
             System.err.println("no valid move found!");
             return getRandomValidMove(s);
@@ -151,7 +152,8 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         if (depth == 0) {
             return evaluate(state, false);
         }
-        for (Move move : state.getMoves()) {
+        List<Move> = Collection.(state.getMoves())
+        for (Move move : ) {
             state.doMove(move);
             int result = alphaBetaMin(node, alpha, beta, depth - 1, false);
             state.undoMove(move);
@@ -528,17 +530,17 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         int unoccupiedBaseLineSpotsWhitePlayer, unoccupiedBaseLineSpotsBlackPlayer;
         unoccupiedBaseLineSpotsWhitePlayer = unoccupiedBaseLineSpotsBlackPlayer = 0;
 
-        // number of unucoopied fields on the promotion line
-        for (int i = 1; i <= row; i++) {
-            if (!(pieces[i] == DraughtsState.BLACKPIECE || pieces[i] == DraughtsState.BLACKKING)) {
-                unoccupiedBaseLineSpotsBlackPlayer++;
-            }
-        }
-        for (int i = pieces.length - 1; i >= pieces.length - row; i++) {
-            if (!(pieces[i] == DraughtsState.WHITEPIECE || pieces[i] == DraughtsState.WHITEKING)) {
-                unoccupiedBaseLineSpotsWhitePlayer++;
-            }
-        }
+//        // number of unucoopied fields on the promotion line
+//        for (int i = 1; i <= row; i++) {
+//            if (!(pieces[i] == DraughtsState.BLACKPIECE || pieces[i] == DraughtsState.BLACKKING)) { // Out of index exception (index: 51)
+//                unoccupiedBaseLineSpotsBlackPlayer++;
+//            }
+//        }
+//        for (int i = pieces.length - 1; i >= pieces.length - row; i++) {
+//            if (!(pieces[i] == DraughtsState.WHITEPIECE || pieces[i] == DraughtsState.WHITEKING)) { // Out of index exception (index: 51)
+//                unoccupiedBaseLineSpotsWhitePlayer++;
+//            }
+//        }
         // to-do: process aggregated dsitances into the result
         // result *= 1 + (unoccupiedBaseLineSpotsBlackPlayer / 5 - unoccupiedBaseLineSpotsWhitePlayer / 5);
 
