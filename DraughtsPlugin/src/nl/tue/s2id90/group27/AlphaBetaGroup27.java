@@ -332,216 +332,216 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
     // END OUTPOSTS
 
     // START BREAK THROUGHS (Abdel)
-    float breakthroughFactor = 0.01f;
-    
-    ArrayList<Integer> blackProtectedBaseLineSpots = new ArrayList<>();
-    ArrayList<Integer> blackUnprotectedBaseLineSpots = new ArrayList<>();
-    ArrayList<Integer> whiteProtectedBaseLineSpots = new ArrayList<>();
-    ArrayList<Integer> whiteUnprotectedBaseLineSpots = new ArrayList<>();
-    
-    for (int i = 1; i <= row; i++) {
-        int pos = pieces[i];
-        if(pos == DraughtsState.BLACKPIECE || pos == DraughtsState.BLACKKING){
-            blackProtectedBaseLineSpots.add(i);
-        } else {
-            blackUnprotectedBaseLineSpots.add(i);
+        float breakthroughFactor = 0.01f;
+
+        ArrayList<Integer> blackProtectedBaseLineSpots = new ArrayList<>();
+        ArrayList<Integer> blackUnprotectedBaseLineSpots = new ArrayList<>();
+        ArrayList<Integer> whiteProtectedBaseLineSpots = new ArrayList<>();
+        ArrayList<Integer> whiteUnprotectedBaseLineSpots = new ArrayList<>();
+
+        for (int i = 1; i <= row; i++) {
+            int pos = pieces[i];
+            if(pos == DraughtsState.BLACKPIECE || pos == DraughtsState.BLACKKING){
+                blackProtectedBaseLineSpots.add(i);
+            } else {
+                blackUnprotectedBaseLineSpots.add(i);
+            }
         }
-    }
-    
-    for (int i = pieces.length - 1; i >= pieces.length - row ; i--) {
-        int pos = pieces[i];
-        if(pos == DraughtsState.WHITEPIECE || pos == DraughtsState.WHITEKING){
-            whiteProtectedBaseLineSpots.add(i);
-        } else {
-            whiteUnprotectedBaseLineSpots.add(i);
+
+        for (int i = pieces.length - 1; i >= pieces.length - row ; i--) {
+            int pos = pieces[i];
+            if(pos == DraughtsState.WHITEPIECE || pos == DraughtsState.WHITEKING){
+                whiteProtectedBaseLineSpots.add(i);
+            } else {
+                whiteUnprotectedBaseLineSpots.add(i);
+            }
         }
-    }
-    // result *= (1 + breakthroughFactor * ((blackUnprotectedBaseLineSpots.size() / 5) -  (whiteUnprotectedBaseLineSpots.size() / 5)));
+        // result *= (1 + breakthroughFactor * ((blackUnprotectedBaseLineSpots.size() / 5) -  (whiteUnprotectedBaseLineSpots.size() / 5)));
     // END BREAK THROUGHS
 
     // START TEMPI (Abdel)
-    /** MOTIVATION and EXPLANATION
-     * In general it is important to advance your pieces more than the opponent.
-     * This is going to be implemented in the following way:
-     * 
-     * An 1D-array with incremental multipliers for each advancing row (seen from the baseline of the player)
-     * We multiply the positions with the respective multiplier of the row the piece is in.
-     * At the end one will have a value representing the advancement of the pieces. 
-     * The black player's number is then subtracted from the white player's number and multiplied by a certain factor.
-     */
-    int [] blackPlayerMultipliers = new int []{ 
-         1,  1,  1,  1,  1, // // can be done more egelantly, but this also fullfilss explanatory purposes.
-         2,  2,  2,  2,  2,
-         3,  3,  3,  3,  3,
-         4,  4,  4,  4,  4,
-         5,  5,  5,  5,  5,
-         6,  6,  6,  6,  6,
-         7,  7,  7,  7,  7,
-         8,  8,  8,  8,  8,
-         9,  9,  9,  9,  9,
-        10, 10, 10, 10, 10,
-    };
-    
-    int [] whitePlayerMultipliers = IntStream.rangeClosed(1, blackPlayerMultipliers.length).map(i -> blackPlayerMultipliers[blackPlayerMultipliers.length-i]).toArray();
-    
-    int whitePlayersTempiScore, blackPlayersTempiScore;
-    whitePlayersTempiScore = blackPlayersTempiScore = 0;
-    
-    for (int i = 1; i < pieces.length; i++) {
-        int piece = pieces[i];
-        if (piece == DraughtsState.WHITEPIECE || piece == DraughtsState.WHITEKING) {
-            whitePlayersTempiScore += whitePlayerMultipliers[i - 1];
+        /** MOTIVATION and EXPLANATION
+         * In general it is important to advance your pieces more than the opponent.
+         * This is going to be implemented in the following way:
+         * 
+         * An 1D-array with incremental multipliers for each advancing row (seen from the baseline of the player)
+         * We multiply the positions with the respective multiplier of the row the piece is in.
+         * At the end one will have a value representing the advancement of the pieces. 
+         * The black player's number is then subtracted from the white player's number and multiplied by a certain factor.
+         */
+        int [] blackPlayerMultipliers = new int []{ 
+             1,  1,  1,  1,  1, // // can be done more egelantly, but this also fullfilss explanatory purposes.
+             2,  2,  2,  2,  2,
+             3,  3,  3,  3,  3,
+             4,  4,  4,  4,  4,
+             5,  5,  5,  5,  5,
+             6,  6,  6,  6,  6,
+             7,  7,  7,  7,  7,
+             8,  8,  8,  8,  8,
+             9,  9,  9,  9,  9,
+            10, 10, 10, 10, 10,
+        };
+
+        int [] whitePlayerMultipliers = IntStream.rangeClosed(1, blackPlayerMultipliers.length).map(i -> blackPlayerMultipliers[blackPlayerMultipliers.length-i]).toArray();
+
+        int whitePlayersTempiScore, blackPlayersTempiScore;
+        whitePlayersTempiScore = blackPlayersTempiScore = 0;
+
+        for (int i = 1; i < pieces.length; i++) {
+            int piece = pieces[i];
+            if (piece == DraughtsState.WHITEPIECE || piece == DraughtsState.WHITEKING) {
+                whitePlayersTempiScore += whitePlayerMultipliers[i - 1];
+            }
+            if (piece == DraughtsState.BLACKPIECE || piece == DraughtsState.BLACKKING) {
+                blackPlayersTempiScore += blackPlayerMultipliers[i - 1];
+            }
         }
-        if (piece == DraughtsState.BLACKPIECE || piece == DraughtsState.BLACKKING) {
-            blackPlayersTempiScore += blackPlayerMultipliers[i - 1];
-        }
-    }
-    
-    float tempiFactor = 0.05f;
-    int maxTempi = 170; // has to be refined (maximum tempi difference --> mathematical proof?0
-    int tempiDifference = whitePlayersTempiScore - blackPlayersTempiScore;
-    float normalizeDifference = 1 - ((tempiDifference) / (maxTempi));
-    result *= (1f + (tempiFactor * normalizeDifference));
+
+        float tempiFactor = 0.05f;
+        int maxTempi = 170; // has to be refined (maximum tempi difference --> mathematical proof?0
+        int tempiDifference = whitePlayersTempiScore - blackPlayersTempiScore;
+        float normalizeDifference = 1 - ((tempiDifference) / (maxTempi));
+        result *= (1f + (tempiFactor * normalizeDifference));
     // END TEMPI
 
     // START FORMATIONS (Adriaan)
-            /*
-             * Remapped all indexes for a more efficient storage, indexes of other
-             * (diagonally positioned) cells in the original form can be retrieved
-             * in the following matter:
-             * Column  :  C = (i mod 4) + 1
-             * Row     :  R = floor(i / 4)   
-             * Top left     = 5R + C
-             * Top right    = 5R + C + 1
-             * Bottom left  = 5(R + 2) + C     = 5R + C + 10
-             * Bottom right = 5(R + 2) + C + 1 = 5R + C + 11
-             * Self         = if R is even : 5(R + 1) + C + 2 = 5R + C + 7
-             *                if R is odd  : 5(R + 1) + C + 1 = 5R + C + 6
-             *   col  0  1  2  3  4  5  6  7  8  9
-             *  row ------------------------------
-             *   0  |    0x    0x    0x    0x    0x
-             *      |
-             *   1  | 0x    00    01    02    03
-             *      |
-             *   2  |    04    05    06    07    0x
-             *      |
-             *   3  | 0x    08    09    10    11
-             *      |
-             *   4  |    12    13    14    15    0x
-             *      |
-             *   5  | 0x    16    17    18    19
-             *      |
-             *   6  |    20    21    22    23    0x
-             *      |
-             *   7  | 0x    24    25    26    27
-             *      |
-             *   8  |    28    29    30    31    0x
-             *      |
-             *   9  | 0x    0x    0x    0x    0x
-             */
-            int whiteGates = 0;
-            int blackGates = 0;
-           
-            int[] diagonalIndex1 = new int[32];
-            int[] diagonalIndex2 = new int[32];
-            for (int i = 0; i < 32; i++) {
-                int c = (i % 4) + 1;
-                int r = i / 4;
-                int tl = 5*r + c;
-                int tr = 5*r + c + 1;
-                int bl = 5*r + c + 10;
-                int br = 5*r + c + 11;
-                int sl; // Self
-                if (r % 2 == 0) { // Even
-                    sl = 5*r + c + 7;
-                } else {
-                    sl = 5*r + c + 6;
-                }
-               
-                if (    
-                       (pieces[tl] == DraughtsState.WHITEKING || pieces[tl] == DraughtsState.WHITEPIECE)
-                    && (pieces[sl] == DraughtsState.WHITEKING || pieces[sl] == DraughtsState.WHITEPIECE)
-                    && (pieces[br] == DraughtsState.WHITEKING || pieces[br] == DraughtsState.WHITEPIECE)
-                ) {
-                    diagonalIndex1[i] = 1;
-                } else if (
-                       (pieces[tl] == DraughtsState.BLACKKING || pieces[tl] == DraughtsState.BLACKPIECE)
-                    && (pieces[sl] == DraughtsState.BLACKKING || pieces[sl] == DraughtsState.BLACKPIECE)
-                    && (pieces[br] == DraughtsState.BLACKKING || pieces[br] == DraughtsState.BLACKPIECE)
-                ) {
-                    diagonalIndex1[i] = -1;
-                }
-                
-                if (    
-                       (pieces[tr] == DraughtsState.WHITEKING || pieces[tr] == DraughtsState.WHITEPIECE)
-                    && (pieces[sl] == DraughtsState.WHITEKING || pieces[sl] == DraughtsState.WHITEPIECE)
-                    && (pieces[bl] == DraughtsState.WHITEKING || pieces[bl] == DraughtsState.WHITEPIECE)
-                ) {
-                    diagonalIndex2[i] = 1;
-                } else if (
-                       (pieces[tr] == DraughtsState.BLACKKING || pieces[tr] == DraughtsState.BLACKPIECE)
-                    && (pieces[sl] == DraughtsState.BLACKKING || pieces[sl] == DraughtsState.BLACKPIECE)
-                    && (pieces[bl] == DraughtsState.BLACKKING || pieces[bl] == DraughtsState.BLACKPIECE)
-                ) {
-                    diagonalIndex2[i] = -1;
-                }
-                
-                if (diagonalIndex1[i] != 0 && diagonalIndex1[i] == diagonalIndex2[i]) {
-                    if (diagonalIndex1[i] == 1) { // White gate
-                        whiteGates += 1;
-                    } else { // Black gate
-                        blackGates += 1;
-                    }
+        /*
+         * Remapped all indexes for a more efficient storage, indexes of other
+         * (diagonally positioned) cells in the original form can be retrieved
+         * in the following matter:
+         * Column  :  C = (i mod 4) + 1
+         * Row     :  R = floor(i / 4)   
+         * Top left     = 5R + C
+         * Top right    = 5R + C + 1
+         * Bottom left  = 5(R + 2) + C     = 5R + C + 10
+         * Bottom right = 5(R + 2) + C + 1 = 5R + C + 11
+         * Self         = if R is even : 5(R + 1) + C + 2 = 5R + C + 7
+         *                if R is odd  : 5(R + 1) + C + 1 = 5R + C + 6
+         *   col  0  1  2  3  4  5  6  7  8  9
+         *  row ------------------------------
+         *   0  |    0x    0x    0x    0x    0x
+         *      |
+         *   1  | 0x    00    01    02    03
+         *      |
+         *   2  |    04    05    06    07    0x
+         *      |
+         *   3  | 0x    08    09    10    11
+         *      |
+         *   4  |    12    13    14    15    0x
+         *      |
+         *   5  | 0x    16    17    18    19
+         *      |
+         *   6  |    20    21    22    23    0x
+         *      |
+         *   7  | 0x    24    25    26    27
+         *      |
+         *   8  |    28    29    30    31    0x
+         *      |
+         *   9  | 0x    0x    0x    0x    0x
+         */
+        int whiteGates = 0;
+        int blackGates = 0;
+
+        int[] diagonalIndex1 = new int[32];
+        int[] diagonalIndex2 = new int[32];
+        for (int i = 0; i < 32; i++) {
+            int c = (i % 4) + 1;
+            int r = i / 4;
+            int tl = 5*r + c;
+            int tr = 5*r + c + 1;
+            int bl = 5*r + c + 10;
+            int br = 5*r + c + 11;
+            int sl; // Self
+            if (r % 2 == 0) { // Even
+                sl = 5*r + c + 7;
+            } else {
+                sl = 5*r + c + 6;
+            }
+
+            if (    
+                   (pieces[tl] == DraughtsState.WHITEKING || pieces[tl] == DraughtsState.WHITEPIECE)
+                && (pieces[sl] == DraughtsState.WHITEKING || pieces[sl] == DraughtsState.WHITEPIECE)
+                && (pieces[br] == DraughtsState.WHITEKING || pieces[br] == DraughtsState.WHITEPIECE)
+            ) {
+                diagonalIndex1[i] = 1;
+            } else if (
+                   (pieces[tl] == DraughtsState.BLACKKING || pieces[tl] == DraughtsState.BLACKPIECE)
+                && (pieces[sl] == DraughtsState.BLACKKING || pieces[sl] == DraughtsState.BLACKPIECE)
+                && (pieces[br] == DraughtsState.BLACKKING || pieces[br] == DraughtsState.BLACKPIECE)
+            ) {
+                diagonalIndex1[i] = -1;
+            }
+
+            if (    
+                   (pieces[tr] == DraughtsState.WHITEKING || pieces[tr] == DraughtsState.WHITEPIECE)
+                && (pieces[sl] == DraughtsState.WHITEKING || pieces[sl] == DraughtsState.WHITEPIECE)
+                && (pieces[bl] == DraughtsState.WHITEKING || pieces[bl] == DraughtsState.WHITEPIECE)
+            ) {
+                diagonalIndex2[i] = 1;
+            } else if (
+                   (pieces[tr] == DraughtsState.BLACKKING || pieces[tr] == DraughtsState.BLACKPIECE)
+                && (pieces[sl] == DraughtsState.BLACKKING || pieces[sl] == DraughtsState.BLACKPIECE)
+                && (pieces[bl] == DraughtsState.BLACKKING || pieces[bl] == DraughtsState.BLACKPIECE)
+            ) {
+                diagonalIndex2[i] = -1;
+            }
+
+            if (diagonalIndex1[i] != 0 && diagonalIndex1[i] == diagonalIndex2[i]) {
+                if (diagonalIndex1[i] == 1) { // White gate
+                    whiteGates += 1;
+                } else { // Black gate
+                    blackGates += 1;
                 }
             }
-            if (whiteGates + blackGates > 0) {
-                result *= 1 + .05f * (whiteGates - blackGates) / (float) (whiteGates + blackGates);
-            }
+        }
+        if (whiteGates + blackGates > 0) {
+            result *= 1 + .05f * (whiteGates - blackGates) / (float) (whiteGates + blackGates);
+        }
     // END FORMATIONS 
     
     // START PROMOTION LINE (Abdel)
-    /** 
-     * Heuristic takes the following things into account:
-     * 1. Aggregated distance of the pawns to promotion line;
-     * 2. Number of unoccupied fields on promotion line.
-     */
-    float promotionLineFactor = .01f;
-    
-    int aggregatedDistanceWhitePlayer, aggregatedDistanceBlackPlayer;
-    aggregatedDistanceWhitePlayer = aggregatedDistanceBlackPlayer = 0;
-    
-    // code readability purposes
-    int [] distancesWhitePlayer = blackPlayerMultipliers;
-    int [] distancesBlackPlayer = whitePlayerMultipliers;
-    
-    // aggregated distances of pawns to the promotion lines
-    for (int i = 1; i < pieces.length; i++) {
-        int pos = pieces[i];
-        if (pos == DraughtsState.WHITEPIECE) {
-            aggregatedDistanceWhitePlayer += (10 * distancesWhitePlayer[i - 1] - 1);
+        /** 
+         * Heuristic takes the following things into account:
+         * 1. Aggregated distance of the pawns to promotion line;
+         * 2. Number of unoccupied fields on promotion line.
+         */
+        float promotionLineFactor = .01f;
+
+        int aggregatedDistanceWhitePlayer, aggregatedDistanceBlackPlayer;
+        aggregatedDistanceWhitePlayer = aggregatedDistanceBlackPlayer = 0;
+
+        // code readability purposes
+        int [] distancesWhitePlayer = blackPlayerMultipliers;
+        int [] distancesBlackPlayer = whitePlayerMultipliers;
+
+        // aggregated distances of pawns to the promotion lines
+        for (int i = 1; i < pieces.length; i++) {
+            int pos = pieces[i];
+            if (pos == DraughtsState.WHITEPIECE) {
+                aggregatedDistanceWhitePlayer += (10 * distancesWhitePlayer[i - 1] - 1);
+            }
+            if (pos == DraughtsState.BLACKPIECE) {
+                aggregatedDistanceBlackPlayer += (10 * distancesBlackPlayer[i - 1] - 1);
+            }
         }
-        if (pos == DraughtsState.BLACKPIECE) {
-            aggregatedDistanceBlackPlayer += (10 * distancesBlackPlayer[i - 1] - 1);
+
+        int unoccupiedBaseLineSpotsWhitePlayer, unoccupiedBaseLineSpotsBlackPlayer;
+        unoccupiedBaseLineSpotsWhitePlayer = unoccupiedBaseLineSpotsBlackPlayer = 0;
+
+        // number of unucoopied fields on the promotion line
+        for (int i = 1; i <= row; i++) {
+            if (!(pieces[i] == DraughtsState.BLACKPIECE || pieces[i] == DraughtsState.BLACKKING)) {
+                unoccupiedBaseLineSpotsBlackPlayer++;
+            }
         }
-    }
-    
-    int unoccupiedBaseLineSpotsWhitePlayer, unoccupiedBaseLineSpotsBlackPlayer;
-    unoccupiedBaseLineSpotsWhitePlayer = unoccupiedBaseLineSpotsBlackPlayer = 0;
-    
-    // number of unucoopied fields on the promotion line
-    for (int i = 1; i <= row; i++) {
-        if (!(pieces[i] == DraughtsState.BLACKPIECE || pieces[i] == DraughtsState.BLACKKING)) {
-            unoccupiedBaseLineSpotsBlackPlayer++;
+        for (int i = pieces.length - 1; i >= pieces.length - row; i++) {
+            if (!(pieces[i] == DraughtsState.WHITEPIECE || pieces[i] == DraughtsState.WHITEKING)) {
+                unoccupiedBaseLineSpotsWhitePlayer++;
+            }
         }
-    }
-    for (int i = pieces.length - 1; i >= pieces.length - row; i++) {
-        if (!(pieces[i] == DraughtsState.WHITEPIECE || pieces[i] == DraughtsState.WHITEKING)) {
-            unoccupiedBaseLineSpotsWhitePlayer++;
-        }
-    }
-    // to-do: process aggregated dsitances into the result
-    // result *= 1 + (unoccupiedBaseLineSpotsBlackPlayer / 5 - unoccupiedBaseLineSpotsWhitePlayer / 5);
-   
+        // to-do: process aggregated dsitances into the result
+        // result *= 1 + (unoccupiedBaseLineSpotsBlackPlayer / 5 - unoccupiedBaseLineSpotsWhitePlayer / 5);
+
     // END PROMOTION LINE
 
     // START QUIET POSITIONS (Optional)
