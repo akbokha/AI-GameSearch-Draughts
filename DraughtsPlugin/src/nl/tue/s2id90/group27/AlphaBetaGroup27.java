@@ -3,8 +3,10 @@ package nl.tue.s2id90.group27;
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 import nl.tue.s2id90.draughts.DraughtsState;
 import nl.tue.s2id90.draughts.player.DraughtsPlayer;
 import org10x10.dam.game.Move;
@@ -251,7 +253,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         *       negatively impact the score, and a high balance score for black
         *       is positive for white and should therefore increase the score.
         */
-        result *= (1 - .1f * ((balanceScores[0] / whiteValue) - (balanceScores[1] / blackValue)));
+        result *= (1 - .05f * ((balanceScores[0] / whiteValue) - (balanceScores[1] / blackValue)));
     // END BALANCED POSITIONS
         
     // START OUTPOSTS (Abdel)
@@ -314,7 +316,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             }
         }
         float outpostResult = 1f;
-        float outpostFactor = 0.1f;
+        float outpostFactor = 0.05f;
         int undefendedBlackPieces = blackOutpostPieces - blackDefendedOutpostPieces;
         int undefendedWhitePieces = whiteOutpostPieces - whiteDefendedOutpostPieces;
         
@@ -330,7 +332,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
     // END OUTPOSTS
 
     // START BREAK THROUGHS (Abdel)
-    float breakthroughFactor = 0.05f;
+    float breakthroughFactor = 0.01f;
     
     ArrayList<Integer> blackProtectedBaseLineSpots = new ArrayList<>();
     ArrayList<Integer> blackUnprotectedBaseLineSpots = new ArrayList<>();
@@ -354,12 +356,52 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             whiteUnprotectedBaseLineSpots.add(i);
         }
     }
-    
-    result *= breakthroughFactor * (1 + blackUnprotectedBaseLineSpots.size() / 5 -  whiteProtectedBaseLineSpots.size() / 5);
+    // result *= (1 + breakthroughFactor * ((blackUnprotectedBaseLineSpots.size() / 5) -  (whiteUnprotectedBaseLineSpots.size() / 5)));
     // END BREAK THROUGHS
 
     // START TEMPI (Abdel)
-            // @todo Implement this
+    /** MOTIVATION and EXPLANATION
+     * In general it is important to advance your pieces more than the opponent.
+     * This is going to be implemented in the following way:
+     * 
+     * An 1D-array with incremental multipliers for each advancing row (seen from the baseline of the player)
+     * We multiply the positions with the respective multiplier of the row the piece is in.
+     * At the end one will have a value representing the advancement of the pieces. 
+     * The black player's number is then subtracted from the white player's number and multiplied by a certain factor.
+     */
+    int [] blackPlayerMultipliers = new int []{ 
+        1, 1, 1, 1, 1, // // can be done more egelantly, but this also fulfilss explanatory purposes.
+        2, 2, 2, 2, 2,
+        3, 3, 3, 3, 3,
+        4, 4, 4, 4, 4,
+        5, 5, 5, 5, 5,
+        6, 6, 6, 6, 6,
+        7, 7, 7, 7, 7,
+        8, 8, 8, 8, 8,
+        9, 9, 9, 9, 9,
+        10, 10, 10, 10, 10
+    };
+    
+    int [] whitePlayerMultipliers = IntStream.rangeClosed(1, blackPlayerMultipliers.length).map(i -> blackPlayerMultipliers[blackPlayerMultipliers.length-i]).toArray();
+    
+    int whitePlayersTempiScore, blackPlayersTempiScore;
+    whitePlayersTempiScore = blackPlayersTempiScore = 0;
+    
+    for (int i = 1; i < pieces.length; i++) {
+        int piece = pieces[i];
+        if (piece == DraughtsState.WHITEPIECE || piece == DraughtsState.WHITEKING) {
+            whitePlayersTempiScore += whitePlayerMultipliers[i - 1];
+        }
+        if (piece == DraughtsState.BLACKPIECE || piece == DraughtsState.BLACKKING) {
+            blackPlayersTempiScore += blackPlayerMultipliers[i - 1];
+        }
+    }
+    
+    float tempiFactor = 0.05f;
+    int maxTempi = 170; // has to be refined (maximum tempi difference --> mathematical proof?0
+    int tempiDifference = whitePlayersTempiScore - blackPlayersTempiScore;
+    float normalizeDifference = 1 - ((tempiDifference) / (maxTempi));
+    result *= (1f + (tempiFactor * normalizeDifference));
     // END TEMPI
 
     // START FORMATIONS (Adriaan)
