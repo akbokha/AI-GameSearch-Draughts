@@ -321,9 +321,9 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         if (whiteOutpostPieces == 0 && blackOutpostPieces != 0) {
             outpostResult += outpostFactor *(undefendedBlackPieces / blackOutpostPieces);
         } else if (whiteOutpostPieces != 0 && blackOutpostPieces == 0) {
-            outpostResult -= outpostFactor *(undefendedWhitePieces / whiteDefendedOutpostPieces);
+            outpostResult -= outpostFactor *(undefendedWhitePieces / whiteOutpostPieces);
         } else if (whiteOutpostPieces != 0 && blackOutpostPieces != 0) {
-            outpostResult += outpostFactor *((undefendedBlackPieces / blackOutpostPieces) - (undefendedWhitePieces / whiteDefendedOutpostPieces));
+            outpostResult += outpostFactor *((undefendedBlackPieces / blackOutpostPieces) - (undefendedWhitePieces / whiteOutpostPieces));
         }
         result *= outpostResult;
         
