@@ -316,7 +316,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             }
         }
         float outpostResult = 1f;
-        float outpostFactor = 0.05f;
+        float outpostFactor = 0.01f;
         int undefendedBlackPieces = blackOutpostPieces - blackDefendedOutpostPieces;
         int undefendedWhitePieces = whiteOutpostPieces - whiteDefendedOutpostPieces;
         
@@ -497,7 +497,52 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             if (whiteGates + blackGates > 0) {
                 result *= 1 + .05f * (whiteGates - blackGates) / (float) (whiteGates + blackGates);
             }
-    // END FORMATIONS
+    // END FORMATIONS 
+    
+    // START PROMOTION LINE (Abdel)
+    /** 
+     * Heuristic takes the following things into account:
+     * 1. Aggregated distance of the pawns to promotion line;
+     * 2. Number of unoccupied fields on promotion line.
+     */
+    float promotionLineFactor = .01f;
+    
+    int aggregatedDistanceWhitePlayer, aggregatedDistanceBlackPlayer;
+    aggregatedDistanceWhitePlayer = aggregatedDistanceBlackPlayer = 0;
+    
+    // code readability purposes
+    int [] distancesWhitePlayer = blackPlayerMultipliers;
+    int [] distancesBlackPlayer = whitePlayerMultipliers;
+    
+    // aggregated distances of pawns to the promotion lines
+    for (int i = 1; i < pieces.length; i++) {
+        int pos = pieces[i];
+        if (pos == DraughtsState.WHITEPIECE) {
+            aggregatedDistanceWhitePlayer += (10 * distancesWhitePlayer[i - 1] - 1);
+        }
+        if (pos == DraughtsState.BLACKPIECE) {
+            aggregatedDistanceBlackPlayer += (10 * distancesBlackPlayer[i - 1] - 1);
+        }
+    }
+    
+    int unoccupiedBaseLineSpotsWhitePlayer, unoccupiedBaseLineSpotsBlackPlayer;
+    unoccupiedBaseLineSpotsWhitePlayer = unoccupiedBaseLineSpotsBlackPlayer = 0;
+    
+    // number of unucoopied fields on the promotion line
+    for (int i = 1; i <= row; i++) {
+        if (!(pieces[i] == DraughtsState.BLACKPIECE || pieces[i] == DraughtsState.BLACKKING)) {
+            unoccupiedBaseLineSpotsBlackPlayer++;
+        }
+    }
+    for (int i = pieces.length - 1; i >= pieces.length - row; i++) {
+        if (!(pieces[i] == DraughtsState.WHITEPIECE || pieces[i] == DraughtsState.WHITEKING)) {
+            unoccupiedBaseLineSpotsWhitePlayer++;
+        }
+    }
+    // to-do: process aggregated dsitances into the result
+    // result *= 1 + (unoccupiedBaseLineSpotsBlackPlayer / 5 - unoccupiedBaseLineSpotsWhitePlayer / 5);
+   
+    // END PROMOTION LINE
 
     // START QUIET POSITIONS (Optional)
             // @todo Implement this
