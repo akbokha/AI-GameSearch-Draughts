@@ -533,17 +533,17 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         int unoccupiedBaseLineSpotsWhitePlayer, unoccupiedBaseLineSpotsBlackPlayer;
         unoccupiedBaseLineSpotsWhitePlayer = unoccupiedBaseLineSpotsBlackPlayer = 0;
 
-//        // number of unucoopied fields on the promotion line
-//        for (int i = 1; i <= row; i++) {
-//            if (!(pieces[i] == DraughtsState.BLACKPIECE || pieces[i] == DraughtsState.BLACKKING)) { // Out of index exception (index: 51)
-//                unoccupiedBaseLineSpotsBlackPlayer++;
-//            }
-//        }
-//        for (int i = pieces.length - 1; i >= pieces.length - row; i++) {
-//            if (!(pieces[i] == DraughtsState.WHITEPIECE || pieces[i] == DraughtsState.WHITEKING)) { // Out of index exception (index: 51)
-//                unoccupiedBaseLineSpotsWhitePlayer++;
-//            }
-//        }
+        // number of unucoopied fields on the promotion line
+        for (int i = 1; i <= row; i++) {
+            if (!(pieces[i] == DraughtsState.BLACKPIECE || pieces[i] == DraughtsState.BLACKKING)) { // Out of index exception (index: 51)
+                unoccupiedBaseLineSpotsBlackPlayer++;
+            }
+        }
+        for (int i = pieces.length - 1; i >= pieces.length - row; i--) {
+            if (!(pieces[i] == DraughtsState.WHITEPIECE || pieces[i] == DraughtsState.WHITEKING)) { // Out of index exception (index: 51)
+                unoccupiedBaseLineSpotsWhitePlayer++;
+            }
+        }
         // to-do: process aggregated dsitances into the result
         // result *= 1 + (unoccupiedBaseLineSpotsBlackPlayer / 5 - unoccupiedBaseLineSpotsWhitePlayer / 5);
 
