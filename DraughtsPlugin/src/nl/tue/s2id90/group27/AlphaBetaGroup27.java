@@ -3,8 +3,6 @@ package nl.tue.s2id90.group27;
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -46,10 +44,10 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             }
         } catch (AIStoppedException ex) {}
         // print the results for debugging reasons
-        System.err.format(
-            "%s: depth= %2d, best move = %5s, value=%d\n", 
-            this.getClass().getSimpleName(),i, bestMove, bestValue
-        );
+//        System.err.format(
+//            "%s: depth= %2d, best move = %5s, value=%d\n", 
+//            this.getClass().getSimpleName(),i, bestMove, bestValue
+//        );
         if (bestMove==null) {
             System.err.println("no valid move found!");
             return getRandomValidMove(s);
@@ -118,7 +116,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
      */
      int alphaBetaMin(DraughtsNode node, int alpha, int beta, int depth, boolean isRoot)
             throws AIStoppedException {
-        if (stopped) { stopped = false; System.err.println("stop"); throw new AIStoppedException(); }
+        if (stopped) { stopped = false; throw new AIStoppedException(); }
         DraughtsState state = node.getState();
         if (state.isEndState()) {
             return evaluate(state, true);
@@ -146,7 +144,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
 
     int alphaBetaMax(DraughtsNode node, int alpha, int beta, int depth, boolean isRoot)
             throws AIStoppedException {
-        if (stopped) { stopped = false; System.err.println("stop"); throw new AIStoppedException(); }
+        if (stopped) { stopped = false; throw new AIStoppedException(); }
         DraughtsState state = node.getState();
         if (state.isEndState()) {
             return evaluate(state, true);
@@ -565,5 +563,10 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
     // END QUIET POSITIONS
         
         return (int) result;
+    }
+    
+    @Override
+    public String toString() {
+        return "["+hashCode()+"]";
     }
 }
