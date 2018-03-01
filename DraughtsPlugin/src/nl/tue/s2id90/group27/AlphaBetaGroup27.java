@@ -445,8 +445,10 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         int whiteGates = 0;
         int blackGates = 0;
 
-        int[] diagonalIndex1 = new int[32];
-        int[] diagonalIndex2 = new int[32];
+        // Store the diagonal index, 1 and -1 resp. denotes a row of 3 white 
+        // and black pieces, else 0.
+        int[] diagonalIndex1 = new int[32]; // Combines the index to the top left and bottom right.
+        int[] diagonalIndex2 = new int[32]; // Combines the index to the top right and bottom left.
         for (int i = 0; i < 32; i++) {
             int c = (i % 4) + 1;
             int r = i / 4;
@@ -500,6 +502,18 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         if (whiteGates + blackGates > 0) {
             result *= 1 + .05f * (whiteGates - blackGates) / (float) (whiteGates + blackGates);
         }
+        
+        int deltaWhiteSquares = 0; // The amount of squares white posses more than black.
+        for (int i = 0; i < 23; i++) {
+            if (
+                i % 4 != 3 // Skip indices in the last index of each row, since they cannot make squares in combination with elements on the lower right.
+                && diagonalIndex2[i] == diagonalIndex2[i+5-(i%8)/4] // Check if the first index if equal to the one on the borrom right
+                && diagonalIndex2[i] == diagonalIndex2[i+9] // Check if the first index is equal to the one two positions to the lower right.
+            ) {
+                deltaWhiteSquares += diagonalIndex2[i];
+            }
+        }
+        result *= 1 + .05f * deltaWhiteSquares;
     // END FORMATIONS 
     
     // START PROMOTION LINE (Abdel)
