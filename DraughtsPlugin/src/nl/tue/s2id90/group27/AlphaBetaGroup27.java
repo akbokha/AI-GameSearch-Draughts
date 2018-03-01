@@ -3,7 +3,9 @@ package nl.tue.s2id90.group27;
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.IntStream;
 import nl.tue.s2id90.draughts.DraughtsState;
@@ -19,6 +21,9 @@ import org10x10.dam.game.Move;
 public class AlphaBetaGroup27 extends DraughtsPlayer{
     private int bestValue=0;
     int maxSearchDepth;
+    
+    HashMap<StateInfo, Integer> transposTable;
+    HashMap<StateInfo, Move> bestMoves;
 
     /** boolean that indicates that the GUI asked the player to stop thinking. */
     private boolean stopped;
@@ -32,6 +37,9 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         Move bestMove = null;
         bestValue = 0;
         DraughtsNode node = new DraughtsNode(s);    // the root of the search tree
+        transposTable = new HashMap<>();
+        bestMoves = new HashMap<>();
+        
         int i = 1;
         try {
             for (; i <= maxSearchDepth; i++) {
@@ -89,7 +97,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
      **/
     int alphaBeta(DraughtsNode node, int alpha, int beta, int depth)
             throws AIStoppedException
-    {
+    {   
         if (node.getState().isWhiteToMove()) {
             return alphaBetaMax(node, alpha, beta, depth, true);
         } else  {
@@ -118,22 +126,38 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             throws AIStoppedException {
         if (stopped) { stopped = false; throw new AIStoppedException(); }
         DraughtsState state = node.getState();
+        StateInfo stateInfo = new StateInfo(state.getPieces(), depth, false); //blackPlayer == minimizing player
         if (state.isEndState()) {
-            return evaluate(state, true);
+            if (transposTable.containsKey(stateInfo)) {
+                return transposTable.get(stateInfo);
+            }
+            int eval = evaluate(state, true);
+            transposTable.put(stateInfo, eval);
+            return eval;
         }
         if (depth == 0) {
-            return evaluate(state, false);
+            if (transposTable.containsKey(stateInfo)) {
+                return transposTable.get(stateInfo);
+            }
+            int eval = evaluate(state, false);
+            transposTable.put(stateInfo, eval);
+            return eval;
         }
         List<Move> moves = state.getMoves();
         Collections.shuffle(moves);
+        if (bestMoves.containsKey(stateInfo)) {
+            moves.add(0, bestMoves.get(stateInfo)); // will be tried first in subsequent iteration
+        }
         for (Move move : moves) {
             state.doMove(move);
             int result = alphaBetaMax(node, alpha, beta, depth - 1, false);
             state.undoMove(move);
             if (result < beta) {
                 beta = result;
-                if (isRoot)
+                if (isRoot) {
+                    bestMoves.put(stateInfo, move);
                     node.setBestMove(move);
+                }
             }
             if (beta <= alpha) {
                 return beta;
@@ -146,22 +170,38 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
             throws AIStoppedException {
         if (stopped) { stopped = false; throw new AIStoppedException(); }
         DraughtsState state = node.getState();
+        StateInfo stateInfo = new StateInfo(state.getPieces(), depth, true); // whitePlayer == maximizing player
         if (state.isEndState()) {
-            return evaluate(state, true);
+            if (transposTable.containsKey(stateInfo)) {
+                return transposTable.get(stateInfo);
+            }
+            int eval = evaluate(state, true);
+            transposTable.put(stateInfo, eval);
+            return eval;
         }
         if (depth == 0) {
-            return evaluate(state, false);
+            if (transposTable.containsKey(stateInfo)) {
+                return transposTable.get(stateInfo);
+            }
+            int eval = evaluate(state, false);
+            transposTable.put(stateInfo, eval);
+            return eval;
         }
         List<Move> moves = state.getMoves();
         Collections.shuffle(moves);
+        if (bestMoves.containsKey(stateInfo)) {
+            moves.add(0, bestMoves.get(stateInfo)); // will be tried first in subsequent iteration
+        }
         for (Move move : moves) {
             state.doMove(move);
             int result = alphaBetaMin(node, alpha, beta, depth - 1, false);
             state.undoMove(move);
             if (result > alpha) {
                 alpha = result;
-                if (isRoot)
+                if (isRoot) {
+                    bestMoves.put(stateInfo, move);
                     node.setBestMove(move);
+                }
             }
             if (alpha >= beta) {
                 return alpha;
@@ -334,34 +374,6 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         
     // END OUTPOSTS
 
-    // START BREAK THROUGHS (Abdel)
-        float breakthroughFactor = 0.01f;
-
-        ArrayList<Integer> blackProtectedBaseLineSpots = new ArrayList<>();
-        ArrayList<Integer> blackUnprotectedBaseLineSpots = new ArrayList<>();
-        ArrayList<Integer> whiteProtectedBaseLineSpots = new ArrayList<>();
-        ArrayList<Integer> whiteUnprotectedBaseLineSpots = new ArrayList<>();
-
-        for (int i = 1; i <= row; i++) {
-            int pos = pieces[i];
-            if(pos == DraughtsState.BLACKPIECE || pos == DraughtsState.BLACKKING){
-                blackProtectedBaseLineSpots.add(i);
-            } else {
-                blackUnprotectedBaseLineSpots.add(i);
-            }
-        }
-
-        for (int i = pieces.length - 1; i >= pieces.length - row ; i--) {
-            int pos = pieces[i];
-            if(pos == DraughtsState.WHITEPIECE || pos == DraughtsState.WHITEKING){
-                whiteProtectedBaseLineSpots.add(i);
-            } else {
-                whiteUnprotectedBaseLineSpots.add(i);
-            }
-        }
-        // result *= (1 + breakthroughFactor * ((blackUnprotectedBaseLineSpots.size() / 5) -  (whiteUnprotectedBaseLineSpots.size() / 5)));
-    // END BREAK THROUGHS
-
     // START TEMPI (Abdel)
         /** MOTIVATION and EXPLANATION
          * In general it is important to advance your pieces more than the opponent.
@@ -516,16 +528,19 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         result *= 1 + .05f * deltaWhiteSquares;
     // END FORMATIONS 
     
-    // START PROMOTION LINE (Abdel)
+    // START PROMOTION LINE (BREAKTROUGHS)(Abdel)
         /** 
          * Heuristic takes the following things into account:
-         * 1. Aggregated distance of the pawns to promotion line;
+         * 1. min distance of the furthest pawn to promotion line;
          * 2. Number of unoccupied fields on promotion line.
+         * 
+         * Can be used to asses a potential breakthrough scenario
          */
-        float promotionLineFactor = .01f;
+        float promotionLineFactor = .001f;
 
-        int aggregatedDistanceWhitePlayer, aggregatedDistanceBlackPlayer;
-        aggregatedDistanceWhitePlayer = aggregatedDistanceBlackPlayer = 0;
+        int minDistanceWhitePlayer, minDistanceBlackPlayer;
+        minDistanceWhitePlayer = minDistanceBlackPlayer = Integer.MAX_VALUE;
+        int maxDistance = 9;
 
         // code readability purposes
         int [] distancesWhitePlayer = blackPlayerMultipliers;
@@ -535,16 +550,21 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         for (int i = 1; i < pieces.length; i++) {
             int pos = pieces[i];
             if (pos == DraughtsState.WHITEPIECE) {
-                aggregatedDistanceWhitePlayer += (10 * distancesWhitePlayer[i - 1] - 1);
+                int distance = distancesWhitePlayer[i - 1] - 1;
+                if (distance < minDistanceWhitePlayer) {
+                    minDistanceWhitePlayer = distance;
+                }
             }
             if (pos == DraughtsState.BLACKPIECE) {
-                aggregatedDistanceBlackPlayer += (10 * distancesBlackPlayer[i - 1] - 1);
+                int distance = distancesBlackPlayer[i - 1] - 1;
+                if (distance < minDistanceBlackPlayer) {
+                    minDistanceBlackPlayer = distance;
+                }
             }
         }
 
         int unoccupiedBaseLineSpotsWhitePlayer, unoccupiedBaseLineSpotsBlackPlayer;
         unoccupiedBaseLineSpotsWhitePlayer = unoccupiedBaseLineSpotsBlackPlayer = 0;
-
         // number of unucoopied fields on the promotion line
         for (int i = 1; i <= row; i++) {
             if (!(pieces[i] == DraughtsState.BLACKPIECE || pieces[i] == DraughtsState.BLACKKING)) { // Out of index exception (index: 51)
@@ -556,27 +576,45 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
                 unoccupiedBaseLineSpotsWhitePlayer++;
             }
         }
-        // to-do: process aggregated dsitances into the result
-        // result *= 1 + (unoccupiedBaseLineSpotsBlackPlayer / 5 - unoccupiedBaseLineSpotsWhitePlayer / 5);
+        result *= 1 + promotionLineFactor * ((maxDistance - minDistanceBlackPlayer) / maxDistance * (unoccupiedBaseLineSpotsBlackPlayer / 5) -
+                (maxDistance - minDistanceWhitePlayer) / maxDistance * (unoccupiedBaseLineSpotsWhitePlayer / 5));
 
-    // END PROMOTION LINE
-
-    // START QUIET POSITIONS (Optional)
-            // @todo Implement this
-            /*
-             * Just a thought: when reaching the deepest level (depth == 1) then
-             * (recursively) evaluate all moves which involve taking a piece, or
-             * just the current situation if no preceding move takes a piece. 
-             * This should be easy to detect, since if any move can take a 
-             * piece, then it will do so, thus in order to check if any move
-             * takes a piece we just evaluate any preceding move.
-             * Note: Generating all moves might be computationally intensive,
-             * hence we might want to check manually if it is possible to take
-             * any piece before computing all moves.
-             */
-    // END QUIET POSITIONS
-        
+    // END PROMOTION LINE (BREAKTHROUGHS)
+    
         return (int) result;
+    }
+    
+    private class StateInfo {
+        int [] pieces;
+        int depth;
+        boolean whitePlayer;
+        
+        StateInfo(int[] pieces, int depth, boolean whitePlayer) {
+            this.pieces = pieces;
+            this.depth = depth;
+            this.whitePlayer = whitePlayer;
+        }
+        
+        @Override
+        public boolean equals(Object o) {
+            if (o == null) {
+                return false;
+            }
+            if (this.getClass() != o.getClass()) {
+                return false;
+            }
+            if (this == o){
+                return true;
+            }
+            StateInfo obj = (StateInfo) o;
+            return this.depth == obj.depth && Arrays.equals(this.pieces, obj.pieces) &&
+                    this.whitePlayer == obj.whitePlayer;
+        }
+        
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(this.pieces) + this.depth + Boolean.compare(this.whitePlayer, false);
+        }
     }
     
     @Override
