@@ -384,39 +384,35 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
          * At the end one will have a value representing the advancement of the pieces. 
          * The black player's number is then subtracted from the white player's number and multiplied by a certain factor.
          */
-        int [] blackPlayerMultipliers = new int []{ 
-             1,  1,  1,  1,  1, // // can be done more egelantly, but this also fullfilss explanatory purposes.
-             2,  2,  2,  2,  2,
-             3,  3,  3,  3,  3,
-             4,  4,  4,  4,  4,
-             5,  5,  5,  5,  5,
-             6,  6,  6,  6,  6,
-             7,  7,  7,  7,  7,
-             8,  8,  8,  8,  8,
-             9,  9,  9,  9,  9,
-            10, 10, 10, 10, 10,
+        double [] positionMultipliers = new double []{ 
+            1.0, 1.0, 1.0, 1.0, 1.0, // // can be done more egelantly, but this also fullfilss explanatory purposes.
+            1.9, 1.9, 1.9, 1.9, 1.9,
+            2.7, 2.7, 2.7, 2.7, 2.7,
+            3.4, 3.4, 3.4, 3.4, 3.4,
+            4.0, 4.0, 4.0, 4.0, 4.0,
+            4.5, 4.5, 4.5, 4.5, 4.5,
+            4.9, 4.9, 4.9, 4.9, 4.9,
+            5.2, 5.2, 5.2, 5.2, 5.2,
+            5.4, 5.4, 5.4, 5.4, 5.4,
+            5.5, 5.5, 5.5, 5.5, 5.5,
         };
 
-        int [] whitePlayerMultipliers = IntStream.rangeClosed(1, blackPlayerMultipliers.length).map(i -> blackPlayerMultipliers[blackPlayerMultipliers.length-i]).toArray();
-
-        int whitePlayersTempiScore, blackPlayersTempiScore;
-        whitePlayersTempiScore = blackPlayersTempiScore = 0;
+        double whitePlayersTempiScore, blackPlayersTempiScore;
+        whitePlayersTempiScore = blackPlayersTempiScore = 0.0;
 
         for (int i = 1; i < pieces.length; i++) {
             int piece = pieces[i];
             if (piece == DraughtsState.WHITEPIECE || piece == DraughtsState.WHITEKING) {
-                whitePlayersTempiScore += whitePlayerMultipliers[i - 1];
+                whitePlayersTempiScore += positionMultipliers[i - 1];
             }
             if (piece == DraughtsState.BLACKPIECE || piece == DraughtsState.BLACKKING) {
-                blackPlayersTempiScore += blackPlayerMultipliers[i - 1];
+                blackPlayersTempiScore += positionMultipliers[positionMultipliers.length - i - 1];
             }
         }
 
         float tempiFactor = 0.05f;
-        int maxTempi = 170; // has to be refined (maximum tempi difference --> mathematical proof?0
-        int tempiDifference = whitePlayersTempiScore - blackPlayersTempiScore;
-        float normalizeDifference = 1 - ((tempiDifference) / (maxTempi));
-        result *= (1f + (tempiFactor * normalizeDifference));
+        double tempiDifference = whitePlayersTempiScore - blackPlayersTempiScore;
+        result *= 1f + tempiFactor * (tempiDifference / (whitePlayersTempiScore + blackPlayersTempiScore));
     // END TEMPI
 
     // START FORMATIONS (Adriaan)
@@ -528,58 +524,9 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         result *= 1 + .05f * deltaWhiteSquares;
     // END FORMATIONS 
     
-    // START PROMOTION LINE (BREAKTROUGHS)(Abdel)
-        /** 
-         * Heuristic takes the following things into account:
-         * 1. min distance of the furthest pawn to promotion line;
-         * 2. Number of unoccupied fields on promotion line.
-         * 
-         * Can be used to asses a potential breakthrough scenario
-         */
-        float promotionLineFactor = .001f;
-
-        int minDistanceWhitePlayer, minDistanceBlackPlayer;
-        minDistanceWhitePlayer = minDistanceBlackPlayer = Integer.MAX_VALUE;
-        int maxDistance = 9;
-
-        // code readability purposes
-        int [] distancesWhitePlayer = blackPlayerMultipliers;
-        int [] distancesBlackPlayer = whitePlayerMultipliers;
-
-        // aggregated distances of pawns to the promotion lines
-        for (int i = 1; i < pieces.length; i++) {
-            int pos = pieces[i];
-            if (pos == DraughtsState.WHITEPIECE) {
-                int distance = distancesWhitePlayer[i - 1] - 1;
-                if (distance < minDistanceWhitePlayer) {
-                    minDistanceWhitePlayer = distance;
-                }
-            }
-            if (pos == DraughtsState.BLACKPIECE) {
-                int distance = distancesBlackPlayer[i - 1] - 1;
-                if (distance < minDistanceBlackPlayer) {
-                    minDistanceBlackPlayer = distance;
-                }
-            }
-        }
-
-        int unoccupiedBaseLineSpotsWhitePlayer, unoccupiedBaseLineSpotsBlackPlayer;
-        unoccupiedBaseLineSpotsWhitePlayer = unoccupiedBaseLineSpotsBlackPlayer = 0;
-        // number of unucoopied fields on the promotion line
-        for (int i = 1; i <= row; i++) {
-            if (!(pieces[i] == DraughtsState.BLACKPIECE || pieces[i] == DraughtsState.BLACKKING)) { // Out of index exception (index: 51)
-                unoccupiedBaseLineSpotsBlackPlayer++;
-            }
-        }
-        for (int i = pieces.length - 1; i >= pieces.length - row; i--) {
-            if (!(pieces[i] == DraughtsState.WHITEPIECE || pieces[i] == DraughtsState.WHITEKING)) { // Out of index exception (index: 51)
-                unoccupiedBaseLineSpotsWhitePlayer++;
-            }
-        }
-        result *= 1 + promotionLineFactor * ((maxDistance - minDistanceBlackPlayer) / maxDistance * (unoccupiedBaseLineSpotsBlackPlayer / 5) -
-                (maxDistance - minDistanceWhitePlayer) / maxDistance * (unoccupiedBaseLineSpotsWhitePlayer / 5));
-
-    // END PROMOTION LINE (BREAKTHROUGHS)
+    // BEGIN COMPACTNESS
+    
+    // END COMPACTNESS
     
         return (int) result;
     }
@@ -613,7 +560,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         
         @Override
         public int hashCode() {
-            return Arrays.hashCode(this.pieces) + this.depth + Boolean.compare(this.whitePlayer, false);
+            return Arrays.hashCode(this.pieces) + 2 * this.depth + Boolean.compare(this.whitePlayer, false);
         }
     }
     
