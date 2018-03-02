@@ -385,7 +385,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
         for (int i = 26; i < (pieces.length - row); i++) { // black's perpective
             if ((pieces[i] == DraughtsState.BLACKPIECE) || (pieces[i] == DraughtsState.BLACKKING)) {
                 blackOutpostPieces += 4; // each outpost piece can be defended from two sides (excl. king moves)
-                if (((pieces[i] % 10) == 5) || (pieces[i] % 10) == 6){ // is placed on one of the edges
+                if (i % 10 == 5 || i % 10 == 6){ // is placed on one of the edges
                     blackDefendedOutpostPieces += 4;
                 } else { // check if it is defended
                     if ((i > 25 && i <= 25 + row) || (i > 35 && i <= 35 + row)) { // odd row
@@ -445,7 +445,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
          * The black player's number is then subtracted from the white player's number and multiplied by a certain factor.
          */
         double [] positionMultipliers = new double []{ 
-            1.0, 1.0, 1.0, 1.0, 1.0, // // can be done more egelantly, but this also fullfilss explanatory purposes.
+            1.0, 1.0, 1.0, 1.0, 1.0, // black's perpsective
             1.9, 1.9, 1.9, 1.9, 1.9,
             2.7, 2.7, 2.7, 2.7, 2.7,
             3.4, 3.4, 3.4, 3.4, 3.4,
@@ -466,7 +466,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
                 whitePlayersTempiScore += positionMultipliers[i - 1];
             }
             if (piece == DraughtsState.BLACKPIECE || piece == DraughtsState.BLACKKING) {
-                blackPlayersTempiScore += positionMultipliers[positionMultipliers.length - i - 1];
+                blackPlayersTempiScore += positionMultipliers[positionMultipliers.length - i];
             }
         }
 
