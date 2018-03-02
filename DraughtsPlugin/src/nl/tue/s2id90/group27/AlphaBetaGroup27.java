@@ -355,7 +355,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
         for (int i = 26; i < (pieces.length - row); i++) { // black's perpective
             if ((pieces[i] == DraughtsState.BLACKPIECE) || (pieces[i] == DraughtsState.BLACKKING)) {
                 blackOutpostPieces += 4; // each outpost piece can be defended from two sides (excl. king moves)
-                if (((pieces[i] % 10) == 5) || (pieces[i] % 10) == 6){ // is placed on one of the edges
+                if (i % 10 == 5 || i % 10 == 6){ // is placed on one of the edges
                     blackDefendedOutpostPieces += 4;
                 } else { // check if it is defended
                     if ((i > 25 && i <= 25 + row) || (i > 35 && i <= 35 + row)) { // odd row
