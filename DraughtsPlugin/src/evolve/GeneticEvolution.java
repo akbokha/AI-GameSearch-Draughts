@@ -1,14 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package evolve;
 
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Semaphore;
@@ -21,7 +14,6 @@ import nl.tue.s2id90.draughts.DraughtsState;
 import nl.tue.s2id90.game.GameState;
 import nl.tue.s2id90.game.Player;
 import nl.tue.s2id90.group27.AlphaBetaGroup27;
-import nl.tue.s2id90.group27.BasicAlphaBetaGroup27;
 import nl.tue.s2id90.tournament.OfflineTournament;
 import org10x10.dam.game.Move;
 
