@@ -5,24 +5,22 @@ public abstract class AbstractNumberGene<T extends Number> extends AbstractGene<
     private T min;
     private T max;
 
-    public AbstractNumberGene(String name) {
-        super(name);
-    }
-
     public T getMin() {
         return min;
     }
 
-    public void setMin(T min) {
+    public AbstractNumberGene setMin(T min) {
         this.min = min;
+        return this;
     }
 
     public T getMax() {
         return max;
     }
 
-    public void setMax(T max) {
+    public AbstractNumberGene setMax(T max) {
         this.max = max;
+        return this;
     }
 
 }

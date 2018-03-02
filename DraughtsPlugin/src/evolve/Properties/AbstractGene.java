@@ -5,26 +5,18 @@ package evolve.Properties;
  */
 public abstract class AbstractGene<Type extends Object> {
     
-    abstract public Type getRandom();
-    abstract public Type getMutated(Type type, float alike);
+    abstract public AbstractGene getRandom();
+    abstract public AbstractGene getMutated(Type value, float alike);
     
-    private Type type;
-    private final String name;
+    private Type value;
 
-    public AbstractGene(String name) {
-        this.name = name;
-    }    
-
-    public String getName() {
-        return name;
+    public Type getValue() {
+        return value;
     }
 
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
+    public AbstractGene setValue(Type value) {
+        this.value = value;
+        return this;
     }
 
 }

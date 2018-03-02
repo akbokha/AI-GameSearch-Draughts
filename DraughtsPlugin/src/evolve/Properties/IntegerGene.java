@@ -7,19 +7,28 @@ public class IntegerGene extends AbstractNumberGene<Integer> {
 
     Random r;
     
-    public IntegerGene(String name) {
-        super(name);
+    public IntegerGene() {
         r = new Random();
     }
 
     @Override
-    public Integer getRandom() {
-        return r.nextInt(getMax() - getMin()) + getMin();
+    public AbstractGene getRandom() {
+        return clone().setValue(r.nextInt(getMax() - getMin()) + getMin());
     }
 
     @Override
-    public Integer getMutated(Integer type, float alike) {
-        return (int) (type * alike + getRandom() * (1f - alike));
+    public AbstractGene getMutated(Integer value, float alike) {
+        return clone().setValue((int) (value * alike + (int) getRandom().getValue() * (1f - alike)));
     }
     
+    protected IntegerGene clone() {
+        IntegerGene clone = new IntegerGene();
+        clone
+            .setMax(this.getMax())
+            .setMin(this.getMin())
+            .setValue(this.getValue())
+        ;
+        
+        return clone;
+    }
 }

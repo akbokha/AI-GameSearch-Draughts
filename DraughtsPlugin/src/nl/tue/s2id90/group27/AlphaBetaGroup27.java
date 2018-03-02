@@ -1,6 +1,7 @@
 package nl.tue.s2id90.group27;
 
 import evolve.Properties.AbstractGene;
+import evolve.Properties.FloatGene;
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
 import java.util.Arrays;
@@ -22,9 +23,9 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
     private int bestValue=0;
     int maxSearchDepth;
     
-    HashMap<StateInfo, Integer> transposTable;
-    HashMap<StateInfo, Move> bestMoves;
-    HashMap<String, AbstractGene> genome;
+    Map<StateInfo, Integer> transposTable;
+    Map<StateInfo, Move> bestMoves;
+    Map<String, AbstractGene> genome;
 
     /** boolean that indicates that the GUI asked the player to stop thinking. */
     private boolean stopped;
@@ -32,6 +33,9 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
     public AlphaBetaGroup27(int maxSearchDepth) {
         super("best.png"); // ToDo: replace with your own icon
         this.maxSearchDepth = maxSearchDepth;
+        
+        genome = new HashMap(10);
+        genome.put("king-value", (new FloatGene()).setMax(4f).setMin(2f));
     }
     
     @Override
@@ -50,10 +54,11 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
     }
 
     @Override
-    public void setGene(String name, AbstractGene property) throws IllegalArgumentException {
-        if (null == genome.get(name)) {
-            
-        }
+    public void setGene(String name, AbstractGene gene) throws IllegalArgumentException {
+        if (null == genome.get(name)) 
+            throw new IllegalArgumentException("Gene " + name + " not found");
+        
+        genome.replace(name, gene);
     }
 
     @Override public Move getMove(DraughtsState s) {
@@ -240,7 +245,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
     // ToDo: write an appropriate evaluation function
     int evaluate(DraughtsState state, boolean endState) {
         float result = 1000000;
-        final int KINGVALUE = 3;
+        final int KINGVALUE = (int) genome.get("king-value").getValue();
         
     // START COUNTING PIECES
         int [] pieces  = state.getPieces();
