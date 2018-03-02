@@ -6,7 +6,7 @@ package evolve.Properties;
 public abstract class AbstractGene<Type extends Object> {
     
     abstract public AbstractGene getRandom();
-    abstract public AbstractGene getMutated(Type value, float alike);
+    abstract public AbstractGene getMutated(float alike);
     
     private Type value;
 
@@ -19,4 +19,9 @@ public abstract class AbstractGene<Type extends Object> {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return getValue().toString();
+    }
+    
 }

@@ -24,20 +24,30 @@ import org10x10.dam.game.Move;
  */
 public class GeneticEvolution<M extends Move>  {
     
-    private static final int POOL_SIZE = 4;
+    private static final int POOL_SIZE = 5;
     private static final int TIME_LIMIT = 200;
-    private static final int MOVES = 5;
-    private static final int ITERATIONS = 20;
+    private static final int MOVES = 150;
+    private static final int ITERATIONS = 100;
     
     public static void main(String[] args) {
         GeneticEvolution a = new GeneticEvolution();
-        a.go(args, DraughtsState::new);
+        a.go(args, DraughtsState::new, .3f, 0f); // Replace the retain chance later of when running with more genes.
         System.exit(0);
     }
     
-    protected void go(String[] args, Supplier<GameState<M>> initialState) {
-        Map<Player, Integer> solutionCandidates = new HashMap<>(POOL_SIZE);
-        Player[] pool = new Player[POOL_SIZE];
+    protected void go(String[] args, Supplier<GameState<M>> initialState, float alike, float retain) {
+        System.out.println("Starting the genetic evolution contest, settings:");
+        System.out.println(" - Pool size            " + POOL_SIZE + " players");
+        System.out.println(" - Number of matches    " + ITERATIONS);
+        System.out.println(" - Time limit per move  " + TIME_LIMIT + "ms");
+        System.out.println(" - Moves limit per game " + MOVES + " moves");
+        System.out.println(" - Mutation alikeness   " + (int) (alike * 100) + "%");
+        System.out.println(" - Gene retain chance   " + (int) (retain * 100) + "%");
+        System.out.println(" - Starting bord \n" + initialState.get());
+        System.out.println("");
+        
+        Map<EvolvableDraughtsPlayer, Integer> solutionCandidates = new HashMap<>(POOL_SIZE);
+        EvolvableDraughtsPlayer[] pool = new EvolvableDraughtsPlayer[POOL_SIZE];
         
         // Fill the list of candidate solutions.
         for (int i = solutionCandidates.size(); i < POOL_SIZE; i++) {
@@ -45,28 +55,34 @@ public class GeneticEvolution<M extends Move>  {
             solutionCandidates.put(pool[i], 0);
         }
         
+        printPool(solutionCandidates);
+        
         Random r = new Random();
-        for (int i = 0; i < ITERATIONS; i++) {
+        for (int i = 1; i <= ITERATIONS; i++) {
             final int indexOfP1 = r.nextInt(POOL_SIZE);
             int indexOfP2;
             do {
                 indexOfP2 = r.nextInt(POOL_SIZE);
             } while (indexOfP2 == indexOfP1);
             
-            Player p1 = pool[indexOfP1];
-            Player p2 = pool[indexOfP2];
+            EvolvableDraughtsPlayer p1 = pool[indexOfP1];
+            EvolvableDraughtsPlayer p2 = pool[indexOfP2];
+            
+            System.out.println("Start match " + i + "/" + ITERATIONS + " between " + p1 + " and " + p2);
             
             // Play the first match
             int result = playMatch(p1, p2, MOVES, TIME_LIMIT, initialState);
             if (result == 0) { // If it is a draw, then play a rematch
+                System.out.println("First match was a draw, playing a rematch");
                 result = -playMatch(p2, p1, MOVES, TIME_LIMIT, initialState); // Negating to take the inversion of roles into account.
                 if (result == 0) { // If the rematch also was a draw, select winner at random.
+                    System.out.println("Rematch also drawed, picking winner at random");
                     result = r.nextBoolean() ? 1 : -1;
                 }
             }
             
-            Player winner;
-            Player loser;
+            EvolvableDraughtsPlayer winner;
+            EvolvableDraughtsPlayer loser;
             int indexOfWinner;
             int indexofLoser;
             if (result > 0) { // p1 wins
@@ -81,21 +97,33 @@ public class GeneticEvolution<M extends Move>  {
                 indexofLoser  = indexOfP1;
             }
             
-            solutionCandidates.compute(winner, (Player t, Integer u) -> {
+            System.out.println("Winner: " + winner + "\tLoser: " + p2);
+            
+            solutionCandidates.compute(winner, (EvolvableDraughtsPlayer t, Integer u) -> {
                 return u + 1;
             });
-            int newLoserScore = solutionCandidates.compute(loser, (Player t, Integer u) -> {
+            int newLoserScore = solutionCandidates.compute(loser, (EvolvableDraughtsPlayer t, Integer u) -> {
                 return u - 2;
             });
             if (newLoserScore < 0) {
                 solutionCandidates.remove(loser);
-                Player replacementPlayer = new AlphaBetaGroup27(10);
+                EvolvableDraughtsPlayer replacementPlayer = winner.generateOffspring(alike, retain);
                 pool[indexofLoser] = replacementPlayer;
                 solutionCandidates.put(replacementPlayer, 0);
+                
+                System.out.println("Replacing loser with " + replacementPlayer);
             }
             
-            System.out.println(solutionCandidates);
+            printPool(solutionCandidates);
         }
+    }
+    
+    private void printPool(Map<EvolvableDraughtsPlayer, Integer> pool) {
+        System.out.println("Current pool: ");
+        for (EvolvableDraughtsPlayer player : pool.keySet()) {
+            System.out.println(" - " + pool.get(player) + "\t" + player);
+        }
+        System.out.println("\n");
     }
     
     /**
@@ -107,12 +135,12 @@ public class GeneticEvolution<M extends Move>  {
      * @param initialState
      * @return 1 if white won, 0 for a tie, -1 if black won
      */
-    int playMatch(Player p0, Player p1, int maxMove, int maxTimeinMS, Supplier<GameState<M>> initialState) {
+    int playMatch(EvolvableDraughtsPlayer p0, EvolvableDraughtsPlayer p1, int maxMove, int maxTimeinMS, Supplier<GameState<M>> initialState) {
         GameState<M> state = initialState.get();
         int moveCount=0;
         while (moveCount<maxMove && !state.isEndState()) {
             // check for illegal moves
-            Player player = (state.isWhiteToMove()?p0:p1);
+            EvolvableDraughtsPlayer player = (state.isWhiteToMove()?p0:p1);
             M move = getComputerMove(player, state, maxTimeinMS);
             if (move==null||!state.getMoves().contains(move)) { // illegal move
                 // player who tried to make the illegal move, looses the game

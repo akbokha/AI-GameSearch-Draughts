@@ -18,8 +18,8 @@ public class FloatGene extends AbstractNumberGene<Float> {
     }
 
     @Override
-    public AbstractGene getMutated(Float type, float alike) {
-        return clone().setValue(type * alike + (float) getRandom().getValue() * (1f - alike));
+    public AbstractGene getMutated(float alike) {
+        return clone().setValue((float) getValue() * alike + (float) getRandom().getValue() * (1f - alike));
     }
 
     @Override

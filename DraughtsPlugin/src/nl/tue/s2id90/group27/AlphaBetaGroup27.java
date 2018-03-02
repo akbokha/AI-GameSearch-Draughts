@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import nl.tue.s2id90.draughts.DraughtsState;
-import nl.tue.s2id90.draughts.player.DraughtsPlayer;
 import org10x10.dam.game.Move;
 
 /**
@@ -19,7 +18,7 @@ import org10x10.dam.game.Move;
  */
 // ToDo: rename this class (and hence this file) to have a distinct name
 //       for your player during the tournament
-public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable {
+public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
     private int bestValue=0;
     int maxSearchDepth;
     
@@ -35,7 +34,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
         this.maxSearchDepth = maxSearchDepth;
         
         genome = new HashMap(10);
-        genome.put("king-value", (new FloatGene()).setMax(4f).setMin(2f));
+        genome.put("king-value", (new FloatGene()).setMax(4f).setMin(2f).setValue(3f));
     }
     
     @Override
@@ -245,8 +244,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
     // ToDo: write an appropriate evaluation function
     int evaluate(DraughtsState state, boolean endState) {
         float result = 1000000;
-        final int KINGVALUE = (int) genome.get("king-value").getValue();
-        
+        final float KINGVALUE = (float) genome.get("king-value").getValue();
     // START COUNTING PIECES
         int [] pieces  = state.getPieces();
         float whiteValue = 0f;
@@ -287,7 +285,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
     // START BALANCED POSITIONS (Adriaan)
         float[] balanceScores = {0, 0};
         for (int i = 1; i < pieces.length; i++) {
-            int pieceValue = 0;
+            float pieceValue = 0;
             int index = 0;
             switch(pieces[i]) {
                 case DraughtsState.WHITEPIECE:
@@ -411,9 +409,9 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
                         if (pieces[i + 5] == DraughtsState.BLACKPIECE || pieces[i + 5] == DraughtsState.BLACKKING) {
                             blackDefendedOutpostPieces++;
                         }
-                        if (pieces[i + 6] == DraughtsState.BLACKPIECE || pieces[i + 6] == DraughtsState.BLACKKING) {
-                            blackDefendedOutpostPieces++;
-                        }
+//                        if (pieces[i + 6] == DraughtsState.BLACKPIECE || pieces[i + 6] == DraughtsState.BLACKKING) {
+//                            blackDefendedOutpostPieces++;
+//                        }
                     } 
                 }
             }
@@ -466,7 +464,7 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
                 whitePlayersTempiScore += positionMultipliers[i - 1];
             }
             if (piece == DraughtsState.BLACKPIECE || piece == DraughtsState.BLACKKING) {
-                blackPlayersTempiScore += positionMultipliers[positionMultipliers.length - i - 1];
+                blackPlayersTempiScore += positionMultipliers[positionMultipliers.length - i];
             }
         }
 
@@ -673,7 +671,9 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
                 }  
             }
         } 
-        result *= 1f + compactnessFactor * (whiteCompactness / (4 * whitePieces) - blackCompactness / (4 * blackPieces));
+        if (whiteCompactness != blackCompactness) {
+            result *= 1f + compactnessFactor * (whiteCompactness / (whiteCompactness + blackCompactness));
+        }
     // END COMPACTNESS
         return (int) result;
     }
@@ -713,6 +713,11 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
     
     @Override
     public String toString() {
-        return "["+hashCode()+"]";
+        String s = "["+hashCode()+"|";
+        for (String key : genome.keySet()) {
+            s += key + ":" + genome.get(key);
+        }
+        
+        return s + "]";
     }
 }

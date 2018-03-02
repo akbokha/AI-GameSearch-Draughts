@@ -17,8 +17,8 @@ public class IntegerGene extends AbstractNumberGene<Integer> {
     }
 
     @Override
-    public AbstractGene getMutated(Integer value, float alike) {
-        return clone().setValue((int) (value * alike + (int) getRandom().getValue() * (1f - alike)));
+    public AbstractGene getMutated(float alike) {
+        return clone().setValue((int) ((int) getValue() * alike + (int) getRandom().getValue() * (1f - alike)));
     }
     
     protected IntegerGene clone() {
