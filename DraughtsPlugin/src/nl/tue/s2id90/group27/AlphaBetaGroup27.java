@@ -249,28 +249,20 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
         int [] pieces  = state.getPieces();
         float whiteValue = 0f;
         float blackValue = 0f;
-        int whitePieces, blackPieces; // for usage in other heuristics
-        whitePieces = blackPieces = 0;
-        int whiteKings, blackKings; // for usage in other heuristics
-        whiteKings = blackKings = 0;
 
         for (int i = 1; i < pieces.length; i++) {
             switch(pieces[i]) {
                 case DraughtsState.WHITEPIECE:
                     whiteValue++;
-                    whitePieces++;
                     break;
                 case DraughtsState.WHITEKING:
                     whiteValue += KINGVALUE;
-                    whiteKings++;
                     break;
                 case DraughtsState.BLACKPIECE:
                     blackValue++;
-                    blackPieces++;
                     break;
                 case DraughtsState.BLACKKING:
                     blackValue += KINGVALUE;
-                    blackKings++;
                     break;     
             }
         }
@@ -409,9 +401,9 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
                         if (pieces[i + 5] == DraughtsState.BLACKPIECE || pieces[i + 5] == DraughtsState.BLACKKING) {
                             blackDefendedOutpostPieces++;
                         }
-//                        if (pieces[i + 6] == DraughtsState.BLACKPIECE || pieces[i + 6] == DraughtsState.BLACKKING) {
-//                            blackDefendedOutpostPieces++;
-//                        }
+                        if (pieces[i + 6] == DraughtsState.BLACKPIECE || pieces[i + 6] == DraughtsState.BLACKKING) {
+                            blackDefendedOutpostPieces++;
+                        }
                     } 
                 }
             }
@@ -468,7 +460,7 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
             }
         }
 
-        float tempiFactor = 0.05f;
+        float tempiFactor = 0.01f;
         double tempiDifference = whitePlayersTempiScore - blackPlayersTempiScore;
         result *= 1f + tempiFactor * (tempiDifference / (whitePlayersTempiScore + blackPlayersTempiScore));
     // END TEMPI
@@ -586,7 +578,7 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
     /**
      * Evaluate the compactness of the pieces by iterating over their respective neighbors
     **/
-        float compactnessFactor = 0.05f;
+        float compactnessFactor = 0.01f;
         int whiteCompactness, blackCompactness;
         whiteCompactness = blackCompactness = 0;
 
