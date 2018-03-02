@@ -251,20 +251,28 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
         int [] pieces  = state.getPieces();
         float whiteValue = 0f;
         float blackValue = 0f;
+        int whitePieces, blackPieces; // for usage in other heuristics
+        whitePieces = blackPieces = 0;
+        int whiteKings, blackKings; // for usage in other heuristics
+        whiteKings = blackKings = 0;
 
         for (int i = 1; i < pieces.length; i++) {
             switch(pieces[i]) {
                 case DraughtsState.WHITEPIECE:
                     whiteValue++;
+                    whitePieces++;
                     break;
                 case DraughtsState.WHITEKING:
                     whiteValue += KINGVALUE;
+                    whiteKings++;
                     break;
                 case DraughtsState.BLACKPIECE:
                     blackValue++;
+                    blackPieces++;
                     break;
                 case DraughtsState.BLACKKING:
                     blackValue += KINGVALUE;
+                    blackKings++;
                     break;     
             }
         }
@@ -335,54 +343,78 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
         int whiteDefendedOutpostPieces, whiteOutpostPieces, blackDefendedOutpostPieces, blackOutpostPieces;
         whiteDefendedOutpostPieces = whiteOutpostPieces = blackDefendedOutpostPieces = blackOutpostPieces = 0;
         
-        int whiteLeftDefender, whiteRightDefender, blackLeftDefender, blackRightDefender;
-        whiteLeftDefender = blackRightDefender = 4;
-        whiteRightDefender = blackLeftDefender = 5;
-        
         int row = 5; // for explanatory purposes
         
         for (int i = (1 + row); i < 26; i++) { // white's perspective
-            int pos = pieces[i];
-            if ((pos == DraughtsState.WHITEPIECE) || (pos == DraughtsState.WHITEKING)) {
+            if ((pieces[i] == DraughtsState.WHITEPIECE) || (pieces[i] == DraughtsState.WHITEKING)) {
                 whiteOutpostPieces += 4; // each outpost piece can be defended from two sides (excl. king moves)
-                if (((pos % 10) == 5) || (pos % 10) == 6){ // is placed on one of the edges
+                if (((i % 10) == 5) || (i % 10) == 6){ // is placed on one of the edges
                     whiteDefendedOutpostPieces += 4;
                 } else { // check if it is defended
-                    if (((pos + whiteLeftDefender) == DraughtsState.WHITEPIECE) || ((pos + whiteLeftDefender) == DraughtsState.WHITEKING)) {
-                        whiteDefendedOutpostPieces++; // is defended from the left
-                    }
-                    if (((pos + whiteRightDefender) == DraughtsState.WHITEPIECE) || ((pos + whiteRightDefender) == DraughtsState.WHITEKING)) {
-                        whiteDefendedOutpostPieces++; // is defended from the right
-                    }
-                    if (((pos - whiteLeftDefender) == DraughtsState.WHITEPIECE) || ((pos - whiteLeftDefender) == DraughtsState.WHITEKING)) {
-                        whiteDefendedOutpostPieces++; // is defended from the left
-                    }
-                    if (((pos - whiteRightDefender) == DraughtsState.WHITEPIECE) || ((pos - whiteRightDefender) == DraughtsState.WHITEKING)) {
-                        whiteDefendedOutpostPieces++; // is defended from the right
-                    }
+                    if ((i > 5 && i <= 5 + row) || (i > 15 && i <= 15 + row)) { // odd row
+                        if (pieces[i - 5] == DraughtsState.WHITEPIECE || pieces[i - 5] == DraughtsState.WHITEKING) {
+                            whiteDefendedOutpostPieces++;
+                        }
+                        if (pieces[i - 6] == DraughtsState.WHITEPIECE || pieces[i - 6] == DraughtsState.WHITEKING) {
+                            whiteDefendedOutpostPieces++;
+                        }
+                        if (pieces[i + 4] == DraughtsState.WHITEPIECE || pieces[i + 4] == DraughtsState.WHITEKING) {
+                            whiteDefendedOutpostPieces++;
+                        }
+                        if (pieces[i + 5] == DraughtsState.WHITEPIECE || pieces[i + 5] == DraughtsState.WHITEKING) {
+                            whiteDefendedOutpostPieces++;
+                        }
+                    } else {
+                        if (pieces[i - 4] == DraughtsState.WHITEPIECE || pieces[i - 4] == DraughtsState.WHITEKING) {
+                            whiteDefendedOutpostPieces++;
+                        }
+                        if (pieces[i - 5] == DraughtsState.WHITEPIECE || pieces[i - 5] == DraughtsState.WHITEKING) {
+                            whiteDefendedOutpostPieces++;
+                        }
+                        if (pieces[i + 5] == DraughtsState.WHITEPIECE || pieces[i + 5] == DraughtsState.WHITEKING) {
+                            whiteDefendedOutpostPieces++;
+                        }
+                        if (pieces[i + 6] == DraughtsState.WHITEPIECE || pieces[i + 6] == DraughtsState.WHITEKING) {
+                            whiteDefendedOutpostPieces++;
+                        }
+                    } 
                 }
             }
         }
         
         for (int i = 26; i < (pieces.length - row); i++) { // black's perpective
-            int pos = pieces[i];
-            if ((pos == DraughtsState.BLACKPIECE) || (pos == DraughtsState.BLACKKING)) {
+            if ((pieces[i] == DraughtsState.BLACKPIECE) || (pieces[i] == DraughtsState.BLACKKING)) {
                 blackOutpostPieces += 4; // each outpost piece can be defended from two sides (excl. king moves)
-                if (((pos % 10) == 5) || (pos % 10) == 6){ // is placed on one of the edges
+                if (((pieces[i] % 10) == 5) || (pieces[i] % 10) == 6){ // is placed on one of the edges
                     blackDefendedOutpostPieces += 4;
                 } else { // check if it is defended
-                    if (((pos - blackLeftDefender) == DraughtsState.BLACKPIECE) || ((pos - blackLeftDefender) == DraughtsState.BLACKKING)) {
-                        blackDefendedOutpostPieces++; // is defended from the left
-                    }
-                    if (((pos - blackRightDefender) == DraughtsState.BLACKPIECE) || ((pos - blackRightDefender) == DraughtsState.BLACKKING)) {
-                        blackDefendedOutpostPieces++; // is defended from the right
-                    }
-                    if (((pos + blackLeftDefender) == DraughtsState.BLACKPIECE) || ((pos + blackLeftDefender) == DraughtsState.BLACKKING)) {
-                        blackDefendedOutpostPieces++; // is defended from the left
-                    }
-                    if (((pos + blackRightDefender) == DraughtsState.BLACKPIECE) || ((pos + blackRightDefender) == DraughtsState.BLACKKING)) {
-                        blackDefendedOutpostPieces++; // is defended from the right
-                    }
+                    if ((i > 25 && i <= 25 + row) || (i > 35 && i <= 35 + row)) { // odd row
+                        if (pieces[i - 5] == DraughtsState.BLACKPIECE || pieces[i - 5] == DraughtsState.BLACKKING) {
+                            blackDefendedOutpostPieces++;
+                        }
+                        if (pieces[i - 6] == DraughtsState.BLACKPIECE || pieces[i - 6] == DraughtsState.BLACKKING) {
+                            blackDefendedOutpostPieces++;
+                        }
+                        if (pieces[i + 4] == DraughtsState.BLACKPIECE || pieces[i + 4] == DraughtsState.BLACKKING) {
+                            blackDefendedOutpostPieces++;
+                        }
+                        if (pieces[i + 5] == DraughtsState.BLACKPIECE || pieces[i + 5] == DraughtsState.BLACKKING) {
+                            blackDefendedOutpostPieces++;
+                        }
+                    } else {
+                        if (pieces[i - 4] == DraughtsState.BLACKPIECE || pieces[i - 4] == DraughtsState.BLACKKING) {
+                            blackDefendedOutpostPieces++;
+                        }
+                        if (pieces[i - 5] == DraughtsState.BLACKPIECE || pieces[i - 5] == DraughtsState.BLACKKING) {
+                            blackDefendedOutpostPieces++;
+                        }
+                        if (pieces[i + 5] == DraughtsState.BLACKPIECE || pieces[i + 5] == DraughtsState.BLACKKING) {
+                            blackDefendedOutpostPieces++;
+                        }
+                        if (pieces[i + 6] == DraughtsState.BLACKPIECE || pieces[i + 6] == DraughtsState.BLACKKING) {
+                            blackDefendedOutpostPieces++;
+                        }
+                    } 
                 }
             }
         }
@@ -553,9 +585,96 @@ public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable
     // END FORMATIONS 
     
     // BEGIN COMPACTNESS
-    
+    /**
+     * Evaluate the compactness of the pieces by iterating over their respective neighbors
+    **/
+        float compactnessFactor = 0.05f;
+        int whiteCompactness, blackCompactness;
+        whiteCompactness = blackCompactness = 0;
+
+        for (int i = 1; i < pieces.length - 1; i++) {
+            if (pieces[i] == DraughtsState.WHITEPIECE || pieces[i] == DraughtsState.WHITEKING) {
+                if (i > row && i < pieces.length - row) { // piece is not on the top promotion line
+                    if (i % 10 == 5 || i % 10 == 6) { // edge piece
+                        if (pieces[i + row] == DraughtsState.WHITEPIECE || pieces[i + row] == DraughtsState.WHITEKING) {
+                            whiteCompactness++;
+                        }
+                        if (pieces[i - row] == DraughtsState.WHITEPIECE || pieces[i - row] == DraughtsState.WHITEKING) {
+                            whiteCompactness++;
+                        }
+                    } else { // not an edge piece
+                        if ((i > 5 && i <= 5 + row) || (i > 15 && i <= 15 + row) || (i > 25 && i <= 25 + row) || (i > 35 && i <= 35 + row)) { // odd row
+                            if (pieces[i - 5] == DraughtsState.WHITEPIECE || pieces[i - 5] == DraughtsState.WHITEKING) {
+                                whiteCompactness++;
+                            }
+                            if (pieces[i - 6] == DraughtsState.WHITEPIECE || pieces[i - 6] == DraughtsState.WHITEKING) {
+                                whiteCompactness++;
+                            }
+                            if (pieces[i + 4] == DraughtsState.WHITEPIECE || pieces[i + 4] == DraughtsState.WHITEKING) {
+                                whiteCompactness++;
+                            }
+                            if (pieces[i + 5] == DraughtsState.WHITEPIECE || pieces[i + 5] == DraughtsState.WHITEKING) {
+                                whiteCompactness++;
+                            }
+                        } else {
+                            if (pieces[i - 4] == DraughtsState.WHITEPIECE || pieces[i - 4] == DraughtsState.WHITEKING) {
+                                whiteCompactness++;
+                            }
+                            if (pieces[i - 5] == DraughtsState.WHITEPIECE || pieces[i - 5] == DraughtsState.WHITEKING) {
+                                whiteCompactness++;
+                            }
+                            if (pieces[i + 5] == DraughtsState.WHITEPIECE || pieces[i + 5] == DraughtsState.WHITEKING) {
+                                whiteCompactness++;
+                            }
+                            if (pieces[i + 6] == DraughtsState.WHITEPIECE || pieces[i + 6] == DraughtsState.WHITEKING) {
+                                whiteCompactness++;
+                            }
+                        } 
+                    }
+                } 
+            } else if (pieces[i] == DraughtsState.BLACKPIECE || pieces[i] == DraughtsState.BLACKKING) {
+                if (i > row && i < pieces.length - row) { // piece is not on the top promotion line
+                    if (i % 10 == 5 || i % 10 == 6) { // edge piece
+                        if (pieces[i + row] == DraughtsState.BLACKPIECE || pieces[i + row] == DraughtsState.BLACKKING) {
+                            blackCompactness++;
+                        }
+                        if (pieces[i - row] == DraughtsState.BLACKPIECE || pieces[i - row] == DraughtsState.BLACKKING) {
+                            blackCompactness++;
+                        }
+                    } else { // not an edge piece
+                        if ((i > 5 && i <= 5 + row) || (i > 15 && i <= 15 + row) || (i > 25 && i <= 25 + row) || (i > 35 && i <= 35 + row)) { // odd row
+                            if (pieces[i - 5] == DraughtsState.BLACKPIECE || pieces[i - 5] == DraughtsState.BLACKKING) {
+                                blackCompactness++;
+                            }
+                            if (pieces[i - 6] == DraughtsState.BLACKPIECE || pieces[i - 6] == DraughtsState.BLACKKING) {
+                                blackCompactness++;
+                            }
+                            if (pieces[i + 4] == DraughtsState.BLACKPIECE || pieces[i + 4] == DraughtsState.BLACKKING) {
+                                blackCompactness++;
+                            }
+                            if (pieces[i + 5] == DraughtsState.BLACKPIECE || pieces[i + 5] == DraughtsState.BLACKKING) {
+                                blackCompactness++;
+                            }
+                        } else {
+                            if (pieces[i - 4] == DraughtsState.BLACKPIECE || pieces[i - 4] == DraughtsState.BLACKKING) {
+                                blackCompactness++;
+                            }
+                            if (pieces[i - 5] == DraughtsState.BLACKPIECE || pieces[i - 5] == DraughtsState.BLACKKING) {
+                                blackCompactness++;
+                            }
+                            if (pieces[i + 5] == DraughtsState.BLACKPIECE || pieces[i + 5] == DraughtsState.BLACKKING) {
+                                blackCompactness++;
+                            }
+                            if (pieces[i + 6] == DraughtsState.BLACKPIECE || pieces[i + 6] == DraughtsState.BLACKKING) {
+                                blackCompactness++;
+                            }
+                        } 
+                    }
+                }  
+            }
+        } 
+        result *= 1f + compactnessFactor * (whiteCompactness / (4 * whitePieces) - blackCompactness / (4 * blackPieces));
     // END COMPACTNESS
-    
         return (int) result;
     }
     
