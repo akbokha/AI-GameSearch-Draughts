@@ -1,11 +1,11 @@
 package evolve.Properties;
 
-public abstract class AbstractNumber<T extends Number> extends AbstractProperty<T> {
+public abstract class AbstractNumberGene<T extends Number> extends AbstractGene<T> {
     
     private T min;
     private T max;
 
-    public AbstractNumber(String name) {
+    public AbstractNumberGene(String name) {
         super(name);
     }
 

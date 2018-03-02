@@ -3,11 +3,11 @@ package evolve.Properties;
 import java.util.Random;
 
 
-public class FloatType extends AbstractNumber<Float> {
+public class FloatGene extends AbstractNumberGene<Float> {
 
     Random r;
     
-    public FloatType(String name) {
+    public FloatGene(String name) {
         super(name);
         r = new Random();
     }

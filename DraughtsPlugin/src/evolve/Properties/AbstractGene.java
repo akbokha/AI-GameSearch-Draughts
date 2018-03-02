@@ -3,7 +3,7 @@ package evolve.Properties;
 /**
  * @param <Type>
  */
-public abstract class AbstractProperty<Type extends Object> {
+public abstract class AbstractGene<Type extends Object> {
     
     abstract public Type getRandom();
     abstract public Type getMutated(Type type, float alike);
@@ -11,7 +11,7 @@ public abstract class AbstractProperty<Type extends Object> {
     private Type type;
     private final String name;
 
-    public AbstractProperty(String name) {
+    public AbstractGene(String name) {
         this.name = name;
     }    
 

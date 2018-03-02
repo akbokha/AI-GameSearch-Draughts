@@ -1,11 +1,13 @@
 package nl.tue.s2id90.group27;
 
+import evolve.Properties.AbstractGene;
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import nl.tue.s2id90.draughts.DraughtsState;
 import nl.tue.s2id90.draughts.player.DraughtsPlayer;
 import org10x10.dam.game.Move;
@@ -16,12 +18,13 @@ import org10x10.dam.game.Move;
  */
 // ToDo: rename this class (and hence this file) to have a distinct name
 //       for your player during the tournament
-public class AlphaBetaGroup27 extends DraughtsPlayer{
+public class AlphaBetaGroup27 extends DraughtsPlayer implements evolve.Evolvable {
     private int bestValue=0;
     int maxSearchDepth;
     
     HashMap<StateInfo, Integer> transposTable;
     HashMap<StateInfo, Move> bestMoves;
+    HashMap<String, AbstractGene> genome;
 
     /** boolean that indicates that the GUI asked the player to stop thinking. */
     private boolean stopped;
@@ -29,6 +32,28 @@ public class AlphaBetaGroup27 extends DraughtsPlayer{
     public AlphaBetaGroup27(int maxSearchDepth) {
         super("best.png"); // ToDo: replace with your own icon
         this.maxSearchDepth = maxSearchDepth;
+    }
+    
+    @Override
+    public Map<String, AbstractGene> getGenome() {
+        return genome;
+    }
+
+    @Override
+    public AbstractGene getGene(String name) throws IllegalArgumentException {
+        AbstractGene gene = genome.get(name);
+        
+        if (gene == null) 
+            throw new IllegalArgumentException("Gene " + name + " not found");
+        
+        return gene;
+    }
+
+    @Override
+    public void setGene(String name, AbstractGene property) throws IllegalArgumentException {
+        if (null == genome.get(name)) {
+            
+        }
     }
 
     @Override public Move getMove(DraughtsState s) {

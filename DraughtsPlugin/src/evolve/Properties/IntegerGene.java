@@ -3,11 +3,11 @@ package evolve.Properties;
 import java.util.Random;
 
 
-public class IntegerType extends AbstractNumber<Integer> {
+public class IntegerGene extends AbstractNumberGene<Integer> {
 
     Random r;
     
-    public IntegerType(String name) {
+    public IntegerGene(String name) {
         super(name);
         r = new Random();
     }
