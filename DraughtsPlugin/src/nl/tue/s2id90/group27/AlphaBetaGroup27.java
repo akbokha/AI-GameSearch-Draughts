@@ -35,6 +35,12 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
         
         genome = new HashMap(10);
         genome.put("king-value", (new FloatGene()).setMax(4f).setMin(2f).setValue(3f));
+        genome.put("balance-factor", (new FloatGene()).setMax(1f).setMin(0f).setValue(.5f));
+        genome.put("outpost-factor", (new FloatGene()).setMax(1f).setMin(0f).setValue(.5f));
+        genome.put("tempi-factor", (new FloatGene()).setMax(1f).setMin(0f).setValue(.5f));
+        genome.put("compactness-factor", (new FloatGene()).setMax(1f).setMin(0f).setValue(.5f));
+        genome.put("gates-factor", (new FloatGene()).setMax(1f).setMin(0f).setValue(.5f));
+        genome.put("squares-factor", (new FloatGene()).setMax(1f).setMin(0f).setValue(.5f));
     }
     
     @Override
@@ -322,7 +328,8 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
         *       negatively impact the score, and a high balance score for black
         *       is positive for white and should therefore increase the score.
         */
-        result *= (1 - .05f * ((balanceScores[0] / whiteValue) - (balanceScores[1] / blackValue)));
+        float balanceFactor = (float) genome.get("balance-factor").getValue();
+        result *= (1 - balanceFactor * ((balanceScores[0] / whiteValue) - (balanceScores[1] / blackValue)));
     // END BALANCED POSITIONS
         
     // START OUTPOSTS (Abdel)
@@ -408,19 +415,17 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
                 }
             }
         }
-        float outpostResult = 1f;
-        float outpostFactor = 0.01f;
+        float outpostFactor = (float) genome.get("outpost-factor").getValue();
         int undefendedBlackPieces = blackOutpostPieces - blackDefendedOutpostPieces;
         int undefendedWhitePieces = whiteOutpostPieces - whiteDefendedOutpostPieces;
         
         if (whiteOutpostPieces == 0 && blackOutpostPieces != 0) {
-            outpostResult += outpostFactor *(undefendedBlackPieces / blackOutpostPieces);
+            result *= 1 + outpostFactor *(undefendedBlackPieces / blackOutpostPieces);
         } else if (whiteOutpostPieces != 0 && blackOutpostPieces == 0) {
-            outpostResult -= outpostFactor *(undefendedWhitePieces / whiteOutpostPieces);
+            result *= 1 - outpostFactor *(undefendedWhitePieces / whiteOutpostPieces);
         } else if (whiteOutpostPieces != 0 && blackOutpostPieces != 0) {
-            outpostResult += outpostFactor *((undefendedBlackPieces / blackOutpostPieces) - (undefendedWhitePieces / whiteOutpostPieces));
+            result *= 1 + outpostFactor *((undefendedBlackPieces / blackOutpostPieces) - (undefendedWhitePieces / whiteOutpostPieces));
         }
-        result *= outpostResult;
         
     // END OUTPOSTS
 
@@ -434,7 +439,7 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
          * At the end one will have a value representing the advancement of the pieces. 
          * The black player's number is then subtracted from the white player's number and multiplied by a certain factor.
          */
-        double [] positionMultipliers = new double []{ 
+        double[] positionMultipliers = new double []{ 
             1.0, 1.0, 1.0, 1.0, 1.0, // black's perpsective
             1.9, 1.9, 1.9, 1.9, 1.9,
             2.7, 2.7, 2.7, 2.7, 2.7,
@@ -460,7 +465,7 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
             }
         }
 
-        float tempiFactor = 0.01f;
+        float tempiFactor = (float) genome.get("tempi-factor").getValue();
         double tempiDifference = whitePlayersTempiScore - blackPlayersTempiScore;
         result *= 1f + tempiFactor * (tempiDifference / (whitePlayersTempiScore + blackPlayersTempiScore));
     // END TEMPI
@@ -556,31 +561,39 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
                     blackGates += 1;
                 }
             }
-        }
+        }        
         if (whiteGates + blackGates > 0) {
-            result *= 1 + .05f * (whiteGates - blackGates) / (float) (whiteGates + blackGates);
+            float gatesFactor = (float) genome.get("gates-factor").getValue();
+            result *= 1 + gatesFactor * (whiteGates - blackGates) / (float) (whiteGates + blackGates);
         }
         
-        int deltaWhiteSquares = 0; // The amount of squares white posses more than black.
+        int whiteSquares = 0; // The amount of white squares
+        int blackSquares = 0; // The amount of black squares
         for (int i = 0; i < 23; i++) {
             if (
                 i % 4 != 3 // Skip indices in the last index of each row, since they cannot make squares in combination with elements on the lower right.
                 && diagonalIndex2[i] == diagonalIndex2[i+5-(i%8)/4] // Check if the first index if equal to the one on the borrom right
                 && diagonalIndex2[i] == diagonalIndex2[i+9] // Check if the first index is equal to the one two positions to the lower right.
             ) {
-                deltaWhiteSquares += diagonalIndex2[i];
+                if (diagonalIndex2[i] > 0) {
+                    whiteSquares++;
+                } else {
+                    blackSquares++;
+                }
             }
         }
-        result *= 1 + .05f * deltaWhiteSquares;
+        if (whiteSquares + blackSquares > 0) {
+            float squaresFactor = (float) genome.get("squares-factor").getValue();
+            result *= 1 + squaresFactor * (whiteSquares - blackSquares) / (whiteSquares + blackSquares);
+        }
     // END FORMATIONS 
     
     // BEGIN COMPACTNESS
     /**
      * Evaluate the compactness of the pieces by iterating over their respective neighbors
     **/
-        float compactnessFactor = 0.01f;
-        int whiteCompactness, blackCompactness;
-        whiteCompactness = blackCompactness = 0;
+        int whiteCompactness = 0;
+        int blackCompactness = 0;
 
         for (int i = 1; i < pieces.length - 1; i++) {
             if (pieces[i] == DraughtsState.WHITEPIECE || pieces[i] == DraughtsState.WHITEKING) {
@@ -664,6 +677,7 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
             }
         } 
         if (whiteCompactness != blackCompactness) {
+            float compactnessFactor = (float) genome.get("compactness-factor").getValue();
             result *= 1f + compactnessFactor * (whiteCompactness / (whiteCompactness + blackCompactness));
         }
     // END COMPACTNESS
@@ -705,9 +719,9 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
     
     @Override
     public String toString() {
-        String s = "["+hashCode()+"|";
+        String s = "["+hashCode();
         for (String key : genome.keySet()) {
-            s += key + ":" + genome.get(key);
+            s += "|" + key + ":" + genome.get(key);
         }
         
         return s + "]";

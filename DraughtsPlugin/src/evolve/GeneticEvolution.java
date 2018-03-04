@@ -27,11 +27,11 @@ public class GeneticEvolution<M extends Move>  {
     private static final int POOL_SIZE = 5;
     private static final int TIME_LIMIT = 200;
     private static final int MOVES = 150;
-    private static final int ITERATIONS = 100;
+    private static final int ITERATIONS = 10;
     
     public static void main(String[] args) {
         GeneticEvolution a = new GeneticEvolution();
-        a.go(args, DraughtsState::new, .3f, 0f); // Replace the retain chance later of when running with more genes.
+        a.go(args, DraughtsState::new, .3f, 0.5f); // Replace the retain chance later of when running with more genes.
         System.exit(0);
     }
     
