@@ -97,7 +97,7 @@ public class GeneticEvolution<M extends Move>  {
                 indexofLoser  = indexOfP1;
             }
             
-            System.out.println("Winner: " + winner + "\tLoser: " + p2);
+            System.out.println("Winner: " + winner + "\tLoser: " + loser);
             
             solutionCandidates.compute(winner, (EvolvableDraughtsPlayer t, Integer u) -> {
                 return u + 1;
