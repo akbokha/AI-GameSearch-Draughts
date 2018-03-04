@@ -2,6 +2,7 @@ package nl.tue.s2id90.group27;
 
 import evolve.Properties.AbstractGene;
 import evolve.Properties.FloatGene;
+import evolve.Properties.ScalarGene;
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
 import java.util.Arrays;
@@ -33,14 +34,15 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
         super("best.png"); // ToDo: replace with your own icon
         this.maxSearchDepth = maxSearchDepth;
         
+        FloatGene scalar = (FloatGene) (new ScalarGene()).setMax(1f).setMin(0f).setValue(.5f);
         genome = new HashMap(10);
         genome.put("king-value", (new FloatGene()).setMax(4f).setMin(2f).setValue(3f));
-        genome.put("balance-factor", (new FloatGene()).setMax(1f).setMin(0f).setValue(.5f));
-        genome.put("outpost-factor", (new FloatGene()).setMax(1f).setMin(0f).setValue(.5f));
-        genome.put("tempi-factor", (new FloatGene()).setMax(1f).setMin(0f).setValue(.5f));
-        genome.put("compactness-factor", (new FloatGene()).setMax(1f).setMin(0f).setValue(.5f));
-        genome.put("gates-factor", (new FloatGene()).setMax(1f).setMin(0f).setValue(.5f));
-        genome.put("squares-factor", (new FloatGene()).setMax(1f).setMin(0f).setValue(.5f));
+        genome.put("balance-factor", scalar.getRandom());
+        genome.put("outpost-factor", scalar.getRandom());
+        genome.put("tempi-factor", scalar.getRandom());
+        genome.put("compactness-factor", scalar.getRandom());
+        genome.put("gates-factor", scalar.getRandom());
+        genome.put("squares-factor", scalar.getRandom());
     }
     
     @Override

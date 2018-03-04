@@ -11,7 +11,6 @@ public class FloatGene extends AbstractNumberGene<Float> {
         r = new Random();
     }
 
-    
     @Override
     public AbstractGene getRandom() {
         return clone().setValue(r.nextFloat() * (getMax() - getMin()) + getMin());
