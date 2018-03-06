@@ -14,11 +14,11 @@ import nl.tue.s2id90.draughts.DraughtsState;
 import org10x10.dam.game.Move;
 
 /**
- * Implementation of the DraughtsPlayer interface.
- * @author huub
+ * @author huub (Implementation of the DraughtsPlayer interface)
+ * Implementation of the EvolvableAlphaBetaPlayer:
+ * @author Adriaan Knapen
+ * @author Abdel Karim Bokharouss
  */
-// ToDo: rename this class (and hence this file) to have a distinct name
-//       for your player during the tournament
 public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
     private int bestValue=0;
     int maxSearchDepth;
@@ -31,7 +31,7 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
     private boolean stopped;
 
     public AlphaBetaGroup27(int maxSearchDepth) {
-        super("best.png"); // ToDo: replace with your own icon
+        super("best.png"); 
         this.maxSearchDepth = maxSearchDepth;
         
         FloatGene scalar = (FloatGene) (new ScalarGene()).setMax(1f).setMin(0f).setValue(.5f);
@@ -55,7 +55,7 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
             float gatesFactor, 
             float squaresFactor
     ) {
-        super("best.png"); // ToDo: replace with your own icon
+        super("best.png");
         this.maxSearchDepth = maxSearchDepth;
         
         genome = new HashMap(10);
