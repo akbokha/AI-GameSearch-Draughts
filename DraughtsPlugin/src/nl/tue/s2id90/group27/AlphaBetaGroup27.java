@@ -45,6 +45,29 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
         genome.put("squares-factor", scalar.getRandom());
     }
     
+    public AlphaBetaGroup27(
+            int maxSearchDepth,
+            float kingValue, 
+            float balanceFactor,
+            float outpostFactor,
+            float tempiFactor, 
+            float compactnessFactor, 
+            float gatesFactor, 
+            float squaresFactor
+    ) {
+        super("best.png"); // ToDo: replace with your own icon
+        this.maxSearchDepth = maxSearchDepth;
+        
+        genome = new HashMap(10);
+        genome.put("king-value", (new FloatGene()).setMax(4f).setMin(2f).setValue(3f));
+        genome.put("balance-factor", (new ScalarGene()).setValue(balanceFactor));
+        genome.put("outpost-factor", (new ScalarGene()).setValue(outpostFactor));
+        genome.put("tempi-factor", (new ScalarGene()).setValue(tempiFactor));
+        genome.put("compactness-factor", (new ScalarGene()).setValue(compactnessFactor));
+        genome.put("gates-factor", (new ScalarGene()).setValue(gatesFactor));
+        genome.put("squares-factor", (new ScalarGene()).setValue(squaresFactor));
+    }
+    
     @Override
     public Map<String, AbstractGene> getGenome() {
         return genome;
@@ -179,13 +202,19 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
             return eval;
         }
         List<Move> moves = state.getMoves();
-        Collections.shuffle(moves);
-        if (bestMoves.containsKey(stateInfo)) {
-            moves.add(0, bestMoves.get(stateInfo)); // will be tried first in subsequent iteration
+        int precedingDepthValue;
+        if (moves.size() == 1) {
+            precedingDepthValue = depth;
+        } else {
+            precedingDepthValue = depth - 1;
+            Collections.shuffle(moves);
+            if (bestMoves.containsKey(stateInfo)) {
+                moves.add(0, bestMoves.get(stateInfo)); // will be tried first in subsequent iteration
+            }
         }
         for (Move move : moves) {
             state.doMove(move);
-            int result = alphaBetaMax(node, alpha, beta, depth - 1, false);
+            int result = alphaBetaMax(node, alpha, beta, precedingDepthValue, false);
             state.undoMove(move);
             if (result < beta) {
                 beta = result;
@@ -223,13 +252,19 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
             return eval;
         }
         List<Move> moves = state.getMoves();
-        Collections.shuffle(moves);
-        if (bestMoves.containsKey(stateInfo)) {
-            moves.add(0, bestMoves.get(stateInfo)); // will be tried first in subsequent iteration
+        int precedingDepthValue;
+        if (moves.size() == 1) {
+            precedingDepthValue = depth;
+        } else {
+            precedingDepthValue = depth - 1;
+            Collections.shuffle(moves);
+            if (bestMoves.containsKey(stateInfo)) {
+                moves.add(0, bestMoves.get(stateInfo)); // will be tried first in subsequent iteration
+            }
         }
         for (Move move : moves) {
             state.doMove(move);
-            int result = alphaBetaMin(node, alpha, beta, depth - 1, false);
+            int result = alphaBetaMin(node, alpha, beta, precedingDepthValue, false);
             state.undoMove(move);
             if (result > alpha) {
                 alpha = result;

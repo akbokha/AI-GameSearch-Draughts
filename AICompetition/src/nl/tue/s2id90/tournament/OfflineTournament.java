@@ -94,7 +94,7 @@ public class OfflineTournament<P extends Player<M,S>, PP extends PlayerProvider<
                     .flatMap(p->p.getPlayers().stream())      // all players in the plugin Folder,
                     .filter(p->!(p instanceof HumanPlayer))   // but human players
                     .collect(Collectors.toList())
-                , 50     // max number of moves in a game
+                , 150     // max number of moves in a game
                 , 200    // max milliseconds/move
         );
     }
@@ -141,34 +141,38 @@ public class OfflineTournament<P extends Player<M,S>, PP extends PlayerProvider<
      * @return Result of the game, contains a.o. list of moves.
      */
     private Result<P,M> playMatch(P p0, P p1, int maxMove, int maxTimeinMS) {
-        S state = constructState.get();
         List<M> moves = new ArrayList<>();
-        index++;
-        int moveCount=0;
-        while (moveCount<maxMove && !state.isEndState()) {
-            // check for illegal moves
-            P player = (state.isWhiteToMove()?p0:p1);
-            M move = getComputerMove(player, state, maxTimeinMS);
-            if (move==null||!state.getMoves().contains(move)) { // illegal move
-                // player who tried to make the illegal move, looses the game
-                return state.isWhiteToMove()
-                        ? Result.of(index,p0, p1, moves, 0, 2, false)
-                        : Result.of(index,p0, p1, moves, 2, 0, false);
-            }
+        for (int i = 0; i < 10; i++) {
+            S state = constructState.get();
+            moves = new ArrayList<>();
+            index++;
+            int moveCount=0;
             
-            moves.add(move);
-            // do the move if it is legal.
-            state.doMove(move);
-            moveCount++;
+            while (moveCount<maxMove && !state.isEndState()) {
+                // check for illegal moves
+                P player = (state.isWhiteToMove()?p0:p1);
+                M move = getComputerMove(player, state, maxTimeinMS);
+                if (move==null||!state.getMoves().contains(move)) { // illegal move
+                    // player who tried to make the illegal move, looses the game
+                    return state.isWhiteToMove()
+                            ? Result.of(index,p0, p1, moves, 0, 2, false)
+                            : Result.of(index,p0, p1, moves, 2, 0, false);
+                }
+
+                moves.add(move);
+                // do the move if it is legal.
+                state.doMove(move);
+                moveCount++;
+            }
+
+            if (state.isEndState()) { // player who is to move, looses the game
+                    return state.isWhiteToMove()
+                            ? Result.of(index,p0, p1, moves, 0, 2, false)
+                            : Result.of(index,p0, p1, moves, 2, 0, false);
+            }
         }
         
-        if (state.isEndState()) { // player who is to move, looses the game
-                return state.isWhiteToMove()
-                        ? Result.of(index,p0, p1, moves, 0, 2, false)
-                        : Result.of(index,p0, p1, moves, 2, 0, false);
-        } else {
-                return  Result.of(index,p0, p1, moves, 1, 1, true);
-        }
+        return  Result.of(index,p0, p1, moves, 1, 1, true);
     }
     
     private M getComputerMove(final Player player, final S gs, final int maxTime) {

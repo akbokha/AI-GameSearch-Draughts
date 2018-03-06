@@ -21,4 +21,11 @@ public class BasicAlphaBetaGroup27 extends AlphaBetaGroup27 {
     int evaluate(DraughtsState state, boolean endState) {
         return super.evaluate(state, true);
     }
+
+    @Override
+    public String getName() {
+        return "basic"; //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    
 }

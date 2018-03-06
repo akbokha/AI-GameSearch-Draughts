@@ -31,4 +31,9 @@ abstract public class EvolvableDraughtsPlayer extends DraughtsPlayer implements 
         
         return result;
     }
+
+    @Override
+    public String getName() {
+        return toString();
+    }
 }
