@@ -29,43 +29,40 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
 
     /** boolean that indicates that the GUI asked the player to stop thinking. */
     private boolean stopped;
+    
+    float tempiFactor = 1;
+    float balanceFactor = 1;
+    float compactnessFactor = 1;
+    float squaresFactor = 1;
+    float outpostFactor = 1;
+    float gatesFactor = 1;
 
     public AlphaBetaGroup27(int maxSearchDepth) {
         super("best.png"); 
         this.maxSearchDepth = maxSearchDepth;
         
-        FloatGene scalar = (FloatGene) (new ScalarGene()).setMax(1f).setMin(0f).setValue(.5f);
-        genome = new HashMap(10);
-        genome.put("king-value", (new FloatGene()).setMax(4f).setMin(2f).setValue(3f));
-        genome.put("balance-factor", scalar.getRandom());
-        genome.put("outpost-factor", scalar.getRandom());
-        genome.put("tempi-factor", scalar.getRandom());
-        genome.put("compactness-factor", scalar.getRandom());
-        genome.put("gates-factor", scalar.getRandom());
-        genome.put("squares-factor", scalar.getRandom());
+        genome = new HashMap(0);
     }
     
     public AlphaBetaGroup27(
             int maxSearchDepth,
-            float kingValue, 
-            float balanceFactor,
-            float outpostFactor,
             float tempiFactor, 
+            float squaresFactor,
+            float kingValue, 
+            float outpostFactor,
             float compactnessFactor, 
-            float gatesFactor, 
-            float squaresFactor
+            float balanceFactor,
+            float gatesFactor
     ) {
         super("best.png");
         this.maxSearchDepth = maxSearchDepth;
         
-        genome = new HashMap(10);
-        genome.put("king-value", (new FloatGene()).setMax(4f).setMin(2f).setValue(3f));
-        genome.put("balance-factor", (new ScalarGene()).setValue(balanceFactor));
-        genome.put("outpost-factor", (new ScalarGene()).setValue(outpostFactor));
-        genome.put("tempi-factor", (new ScalarGene()).setValue(tempiFactor));
-        genome.put("compactness-factor", (new ScalarGene()).setValue(compactnessFactor));
-        genome.put("gates-factor", (new ScalarGene()).setValue(gatesFactor));
-        genome.put("squares-factor", (new ScalarGene()).setValue(squaresFactor));
+        this.balanceFactor = balanceFactor;
+        this.tempiFactor = tempiFactor;
+        this.squaresFactor = squaresFactor;
+        this.compactnessFactor = compactnessFactor;
+        this.outpostFactor = outpostFactor;
+        this.gatesFactor = gatesFactor;
     }
     
     @Override
@@ -287,7 +284,7 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
     // ToDo: write an appropriate evaluation function
     int evaluate(DraughtsState state, boolean endState) {
         float result = 1000000;
-        final float KINGVALUE = (float) genome.get("king-value").getValue();
+        final float KINGVALUE = 3;
     // START COUNTING PIECES
         int [] pieces  = state.getPieces();
         float whiteValue = 0f;
@@ -365,7 +362,6 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
         *       negatively impact the score, and a high balance score for black
         *       is positive for white and should therefore increase the score.
         */
-        float balanceFactor = (float) genome.get("balance-factor").getValue();
         result *= (1 - balanceFactor * ((balanceScores[0] / whiteValue) - (balanceScores[1] / blackValue)));
     // END BALANCED POSITIONS
         
@@ -452,7 +448,6 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
                 }
             }
         }
-        float outpostFactor = (float) genome.get("outpost-factor").getValue();
         int undefendedBlackPieces = blackOutpostPieces - blackDefendedOutpostPieces;
         int undefendedWhitePieces = whiteOutpostPieces - whiteDefendedOutpostPieces;
         
@@ -502,7 +497,6 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
             }
         }
 
-        float tempiFactor = (float) genome.get("tempi-factor").getValue();
         double tempiDifference = whitePlayersTempiScore - blackPlayersTempiScore;
         result *= 1f + tempiFactor * (tempiDifference / (whitePlayersTempiScore + blackPlayersTempiScore));
     // END TEMPI
@@ -600,7 +594,6 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
             }
         }        
         if (whiteGates + blackGates > 0) {
-            float gatesFactor = (float) genome.get("gates-factor").getValue();
             result *= 1 + gatesFactor * (whiteGates - blackGates) / (float) (whiteGates + blackGates);
         }
         
@@ -620,7 +613,6 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
             }
         }
         if (whiteSquares + blackSquares > 0) {
-            float squaresFactor = (float) genome.get("squares-factor").getValue();
             result *= 1 + squaresFactor * (whiteSquares - blackSquares) / (whiteSquares + blackSquares);
         }
     // END FORMATIONS 
@@ -714,7 +706,6 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
             }
         } 
         if (whiteCompactness != blackCompactness) {
-            float compactnessFactor = (float) genome.get("compactness-factor").getValue();
             result *= 1f + compactnessFactor * (whiteCompactness / (whiteCompactness + blackCompactness));
         }
     // END COMPACTNESS
@@ -756,9 +747,10 @@ public class AlphaBetaGroup27 extends evolve.EvolvableDraughtsPlayer {
     
     @Override
     public String toString() {
-        String s = "["+hashCode();
-        for (String key : genome.keySet()) {
-            s += "|" + key + ":" + genome.get(key);
+        String s = "[group27";
+        float[] vars = {tempiFactor, squaresFactor, outpostFactor, compactnessFactor, balanceFactor, gatesFactor};
+        for (float key : vars) {
+            s += "|" + key;
         }
         
         return s + "]";
